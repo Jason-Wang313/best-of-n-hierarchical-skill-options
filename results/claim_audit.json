@@ -1,0 +1,44 @@
+{
+  "all_passed": true,
+  "claims": {
+    "boundary_sieve_improves_large_N": {
+      "description": "Boundary-Calibrated Option Sieve improves large-N utility and executability.",
+      "status": "pass",
+      "threshold": 0.0,
+      "value": 0.5282484452541282
+    },
+    "finite_N_law_matches_monte_carlo": {
+      "description": "Exact finite-population order-statistic law matches Monte Carlo.",
+      "status": "pass",
+      "threshold": 0.055,
+      "value": 0.01057467319889758
+    },
+    "oracle_control_does_not_show_failure": {
+      "description": "An oracle-feasibility scorer does not suffer the same degradation.",
+      "status": "pass",
+      "threshold": 0.95,
+      "value": 8.983621533283744
+    },
+    "raw_executability_degrades": {
+      "description": "Raw Best-of-N loses option-chain executability at high N.",
+      "status": "pass",
+      "threshold": 0.72,
+      "value": 0.15157013359874036
+    },
+    "raw_proxy_increases_with_N": {
+      "description": "Selected proxy score rises substantially as the candidate budget grows.",
+      "status": "pass",
+      "threshold": 1.0,
+      "value": 7.520756494947586
+    },
+    "raw_true_utility_turns_down": {
+      "description": "The true utility curve peaks and then declines under proxy selection.",
+      "status": "pass",
+      "threshold": 0.78,
+      "value": -0.07731142147770335
+    }
+  },
+  "finite_path": "C:\\Users\\wangz\\best of n hierarchical skill options\\results\\finite_n_validation.csv",
+  "max_N": 512,
+  "selection_path": "C:\\Users\\wangz\\best of n hierarchical skill options\\results\\all_selection.csv"
+}
