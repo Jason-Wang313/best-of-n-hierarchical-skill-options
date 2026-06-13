@@ -52,17 +52,17 @@ def main() -> None:
     FINAL.mkdir(parents=True, exist_ok=True)
     out = FINAL / "iclr_submission.pdf"
     paragraphs = [
-        "Best-of-N Search Amplifies Option-Boundary Errors in Hierarchical Skill Planning",
+        "Handoff-Feasibility Audits for Hierarchical Skill-Chain Planners",
         "Anonymous ICLR-style draft fallback. Local LaTeX compilation was unavailable or failed; see paper/final/build_log.md for the exact build status.",
-        "Abstract: Hierarchical robot planners compose learned skills, options, or subgoals with a high-level scorer. Best-of-N inference samples many abstract plans and executes the highest proxy-scoring plan. This controlled mechanism study shows that when the proxy is miscalibrated at option boundaries, increasing N can select plans that look better abstractly but are less executable because their initiation sets, termination distributions, and handoffs are unsafe.",
-        "Main result: in the generated sweep, raw Best-of-N raises selected proxy score while reducing option-chain executability at high N. Boundary-Calibrated Option Sieve improves large-N true utility using only public boundary diagnostics.",
+        "Abstract: Hierarchical robot planners compose learned skills, options, or subgoals with a high-level scorer. Proxy-tail planning samples many abstract plans and executes the highest proxy-scoring plan. This controlled mechanism study shows that when the proxy is miscalibrated at option boundaries, increasing N can select plans that look better abstractly but are less executable because their initiation sets, termination distributions, and handoffs are unsafe.",
+        "Main result: in the generated sweep, proxy-tail planning raises selected proxy score while reducing option-chain executability at high N. Handoff-Calibrated Sieve improves large-budget true utility using only public boundary diagnostics.",
         "This fallback PDF is intentionally minimal. The full LaTeX source remains in paper/main.tex and uses the official ICLR 2026 style files when a TeX toolchain is available.",
     ]
     with PdfPages(out) as pdf:
-        add_text_page(pdf, "Best-of-N Option-Boundary Errors", paragraphs)
-        add_image_page(pdf, PAPER / "figures" / "bon_degradation.png", "Raw Best-of-N Degradation")
+        add_text_page(pdf, "Handoff-Feasibility Audits", paragraphs)
+        add_image_page(pdf, PAPER / "figures" / "handoff_tail_degradation.png", "Proxy-Tail Handoff Degradation")
         add_image_page(pdf, PAPER / "figures" / "repair_comparison.png", "Boundary Sieve Repair")
-        add_image_page(pdf, PAPER / "figures" / "finite_n_law.png", "Finite-N Law Validation")
+        add_image_page(pdf, PAPER / "figures" / "rank_tail_calibration.png", "Rank-Tail Calibration")
     print(out)
 
 

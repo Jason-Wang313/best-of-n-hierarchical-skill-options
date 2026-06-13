@@ -1,4 +1,4 @@
-from bonoptions.experiments.common import finite_n_validation, run_selection_sweep
+from skill_handoff_audit.experiments.common import finite_n_validation, run_selection_sweep
 
 
 def test_smoke_sweep_contains_raw_and_repair() -> None:
@@ -10,7 +10,7 @@ def test_smoke_sweep_contains_raw_and_repair() -> None:
         dataset="test",
         include_repair=True,
     )
-    assert set(df["selector"]) == {"raw_bon", "boundary_sieve"}
+    assert set(df["selector"]) == {"proxy_tail", "boundary_sieve"}
     assert set(df["N"]) == {1, 4}
 
 

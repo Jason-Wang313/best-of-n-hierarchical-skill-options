@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from bonoptions.core import PlanDiagnostics
+from skill_handoff_audit.core import PlanDiagnostics
 
 
 @dataclass(frozen=True)

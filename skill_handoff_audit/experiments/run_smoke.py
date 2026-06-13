@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from bonoptions.experiments.common import (
+from skill_handoff_audit.experiments.common import (
     FIGURES,
     RESULTS,
     finite_n_validation,
@@ -27,9 +27,9 @@ def main() -> None:
     finite = finite_n_validation(ns=ns, population_size=900, repetitions=500, seed=14)
     finite.to_csv(RESULTS / "smoke_finite_n.csv", index=False)
 
-    plot_degradation(df, FIGURES / "smoke_degradation.png")
+    plot_degradation(df, FIGURES / "smoke_handoff_tail.png")
     plot_repair(df, FIGURES / "smoke_repair.png")
-    plot_finite_law(finite, FIGURES / "smoke_finite_n_law.png")
+    plot_finite_law(finite, FIGURES / "smoke_rank_tail_calibration.png")
     print(f"wrote {out_csv}")
     print(f"wrote {RESULTS / 'smoke_finite_n.csv'}")
 

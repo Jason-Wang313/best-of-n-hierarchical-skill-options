@@ -9,13 +9,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from bonoptions.core import CandidatePlan, OptionWorld
-from bonoptions.planner import (
-    BestOfNPlanner,
-    BoundaryCalibratedOptionSieve,
-    finite_n_selected_expectation,
+from skill_handoff_audit.core import CandidatePlan, OptionWorld
+from skill_handoff_audit.planner import (
+    ProxyTailPlanner,
+    HandoffCalibratedSieve,
+    rank_tail_selected_expectation,
 )
-from bonoptions.scoring import ProxyScorer
+from skill_handoff_audit.scoring import ProxyScorer
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -73,8 +73,8 @@ def run_selection_sweep(
 
     world = OptionWorld.default(seed=world_seed)
     scorer = ProxyScorer(mode=mode, miscalibration=miscalibration)
-    planner = BestOfNPlanner(world=world, scorer=scorer)
-    sieve = BoundaryCalibratedOptionSieve()
+    planner = ProxyTailPlanner(world=world, scorer=scorer)
+    sieve = HandoffCalibratedSieve()
     rows: list[dict[str, float | int | str]] = []
 
     max_n = max(ns)
@@ -87,7 +87,7 @@ def run_selection_sweep(
                 _row(
                     dataset=dataset,
                     mode=mode,
-                    selector="raw_bon",
+                    selector="proxy_tail",
                     horizon=horizon,
                     seed=int(seed),
                     n=n,
@@ -122,9 +122,9 @@ def finite_n_validation(
     ns = sorted({int(n) for n in ns})
     world = OptionWorld.default(seed=0)
     scorer = ProxyScorer(mode="miscalibrated", miscalibration=1.25)
-    planner = BestOfNPlanner(world=world, scorer=scorer)
+    planner = ProxyTailPlanner(world=world, scorer=scorer)
     population = planner.generate_candidates(n=population_size, horizon=horizon, seed=seed)
-    exact = finite_n_selected_expectation(population, ns=ns, metric="true_utility")
+    exact = rank_tail_selected_expectation(population, ns=ns, metric="true_utility")
 
     proxy = np.array([plan.proxy_score for plan in population])
     utility = np.array([plan.true_utility for plan in population])
@@ -181,7 +181,7 @@ def _mean_curve(
 
 
 def plot_degradation(df: pd.DataFrame, out_path: Path) -> None:
-    raw = _mean_curve(df, dataset="selection", mode="miscalibrated", selector="raw_bon", horizon=4)
+    raw = _mean_curve(df, dataset="selection", mode="miscalibrated", selector="proxy_tail", horizon=4)
     repaired = _mean_curve(
         df, dataset="selection", mode="miscalibrated", selector="boundary_sieve", horizon=4
     )
@@ -189,16 +189,16 @@ def plot_degradation(df: pd.DataFrame, out_path: Path) -> None:
     axes[0].plot(raw["N"], raw["proxy_score"], marker="o", label="proxy score")
     axes[0].plot(raw["N"], raw["true_utility"], marker="s", label="true utility")
     axes[0].set_xscale("log", base=2)
-    axes[0].set_xlabel("Best-of-N budget")
+    axes[0].set_xlabel("Candidate budget N")
     axes[0].set_ylabel("selected plan score")
-    axes[0].set_title("Raw BoN selects the proxy tail")
+    axes[0].set_title("Proxy-tail planning selects risky handoffs")
     axes[0].legend(frameon=False)
 
-    axes[1].plot(raw["N"], raw["true_executability"], marker="o", label="raw BoN")
+    axes[1].plot(raw["N"], raw["true_executability"], marker="o", label="proxy tail")
     axes[1].plot(repaired["N"], repaired["true_executability"], marker="s", label="boundary sieve")
     axes[1].plot(raw["N"], raw["public_boundary_risk"], marker="^", label="raw boundary risk")
     axes[1].set_xscale("log", base=2)
-    axes[1].set_xlabel("Best-of-N budget")
+    axes[1].set_xlabel("Candidate budget N")
     axes[1].set_title("Boundary feasibility is the failing axis")
     axes[1].legend(frameon=False)
     fig.savefig(out_path, dpi=180)
@@ -206,23 +206,23 @@ def plot_degradation(df: pd.DataFrame, out_path: Path) -> None:
 
 
 def plot_repair(df: pd.DataFrame, out_path: Path) -> None:
-    raw = _mean_curve(df, dataset="selection", mode="miscalibrated", selector="raw_bon", horizon=4)
+    raw = _mean_curve(df, dataset="selection", mode="miscalibrated", selector="proxy_tail", horizon=4)
     repaired = _mean_curve(
         df, dataset="selection", mode="miscalibrated", selector="boundary_sieve", horizon=4
     )
     fig, axes = plt.subplots(1, 2, figsize=(10.2, 3.6), constrained_layout=True)
-    axes[0].plot(raw["N"], raw["true_utility"], marker="o", label="raw BoN")
+    axes[0].plot(raw["N"], raw["true_utility"], marker="o", label="proxy tail")
     axes[0].plot(repaired["N"], repaired["true_utility"], marker="s", label="boundary sieve")
     axes[0].set_xscale("log", base=2)
-    axes[0].set_xlabel("Best-of-N budget")
+    axes[0].set_xlabel("Candidate budget N")
     axes[0].set_ylabel("true utility")
     axes[0].set_title("Repair recovers executable value")
     axes[0].legend(frameon=False)
 
-    axes[1].plot(raw["N"], raw["public_boundary_risk"], marker="o", label="raw BoN")
+    axes[1].plot(raw["N"], raw["public_boundary_risk"], marker="o", label="proxy tail")
     axes[1].plot(repaired["N"], repaired["public_boundary_risk"], marker="s", label="boundary sieve")
     axes[1].set_xscale("log", base=2)
-    axes[1].set_xlabel("Best-of-N budget")
+    axes[1].set_xlabel("Candidate budget N")
     axes[1].set_ylabel("public boundary risk")
     axes[1].set_title("Sieve suppresses unsafe handoffs")
     axes[1].legend(frameon=False)
@@ -233,11 +233,11 @@ def plot_repair(df: pd.DataFrame, out_path: Path) -> None:
 def plot_controls(df: pd.DataFrame, out_path: Path) -> None:
     fig, ax = plt.subplots(figsize=(6.4, 4.0), constrained_layout=True)
     for mode in ["miscalibrated", "calibrated", "oracle", "random", "anti_correlated"]:
-        sub = _mean_curve(df, dataset="selection", mode=mode, selector="raw_bon", horizon=4)
+        sub = _mean_curve(df, dataset="selection", mode=mode, selector="proxy_tail", horizon=4)
         if not sub.empty:
             ax.plot(sub["N"], sub["true_utility"], marker="o", label=mode)
     ax.set_xscale("log", base=2)
-    ax.set_xlabel("Best-of-N budget")
+    ax.set_xlabel("Candidate budget N")
     ax.set_ylabel("selected true utility")
     ax.set_title("Controls isolate proxy-boundary miscalibration")
     ax.legend(frameon=False, fontsize=8)
@@ -247,12 +247,12 @@ def plot_controls(df: pd.DataFrame, out_path: Path) -> None:
 
 def plot_finite_law(df: pd.DataFrame, out_path: Path) -> None:
     fig, ax = plt.subplots(figsize=(6.2, 3.8), constrained_layout=True)
-    ax.plot(df["N"], df["exact_expected_true_utility"], marker="o", label="finite-N law")
+    ax.plot(df["N"], df["exact_expected_true_utility"], marker="o", label="rank-tail law")
     ax.plot(df["N"], df["mc_expected_true_utility"], marker="s", linestyle="--", label="Monte Carlo")
     ax.set_xscale("log", base=2)
-    ax.set_xlabel("Best-of-N budget")
+    ax.set_xlabel("Candidate budget N")
     ax.set_ylabel("E[selected true utility]")
-    ax.set_title("Finite-population order-statistic law")
+    ax.set_title("Rank-tail calibration law")
     ax.legend(frameon=False)
     fig.savefig(out_path, dpi=180)
     plt.close(fig)

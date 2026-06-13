@@ -1,6 +1,6 @@
 import numpy as np
 
-from bonoptions.core import OptionWorld, SkillOption
+from skill_handoff_audit.core import OptionWorld, SkillOption
 
 
 def test_initiation_probability_drops_outside_radius() -> None:

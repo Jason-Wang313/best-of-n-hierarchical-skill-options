@@ -1,8 +1,8 @@
-# Proof Attack
+# Rank-Tail Calibration Attack
 
-## Proposition Under Test
+## Identity Under Test
 
-For a finite proposal population of option plans `P = {(S_i, U_i)}_{i=1}^M`, where `S_i` is a proxy score and `U_i` is true utility, draw `N` candidates independently and uniformly with replacement from `P`. Select the candidate with the largest proxy score. If proxy scores are sorted increasingly with deterministic tie-breaking, then:
+For a finite proposal population of option plans `P = {(S_i, U_i)}_{i=1}^M`, where `S_i` is a proxy score and `U_i` is true utility, draw `N` candidates independently and uniformly with replacement. Select the proxy-tail candidate. If proxy scores are sorted increasingly with deterministic tie-breaking, then:
 
 ```text
 E[U_selected(N)] = sum_{r=1}^M U_(r) * [(r/M)^N - ((r-1)/M)^N]
@@ -18,11 +18,11 @@ The item at rank `r` is selected exactly when all `N` samples have rank at most 
 P(max rank = r) = (r/M)^N - ((r-1)/M)^N.
 ```
 
-Linearity of expectation gives the result.
+Linearity of expectation gives the identity.
 
 ## Attack 1: Ties
 
-If proxy ties exist, the rank formula needs a tie policy. The implementation uses continuous proxy noise and stable sorting. The theorem in the paper states deterministic tie-breaking rather than pretending ties cannot happen.
+If proxy ties exist, the rank formula needs a tie policy. The implementation uses continuous proxy noise and stable sorting. The paper states deterministic tie-breaking rather than pretending ties cannot happen.
 
 ## Attack 2: Without Replacement
 
@@ -30,11 +30,11 @@ The formula is for with-replacement draws from a proposal distribution. A withou
 
 ## Attack 3: Adaptive Planners
 
-The law does not cover planners that adapt proposal distributions after seeing candidates. The paper states the theorem for fixed proposal populations and uses it as a diagnostic, not as a universal theorem for all hierarchical planning.
+The law does not cover planners that adapt proposal distributions after seeing candidates. The paper states the identity for fixed proposal populations and uses it as a diagnostic, not as a universal theorem for hierarchical planning.
 
-## Attack 4: Does the Law Prove Degradation?
+## Attack 4: Does The Identity Prove Degradation?
 
-No. The law explains how selection concentrates on high proxy ranks. Degradation requires the empirical or assumed condition that high proxy ranks have lower true utility because of boundary miscalibration. The experiments test that condition directly.
+No. It explains how selection concentrates on high proxy ranks. Degradation requires the empirical condition that high proxy ranks have lower true utility because of boundary miscalibration. The experiments test that condition directly.
 
 ## Attack 5: Repair Leakage
 
@@ -42,4 +42,4 @@ The repair must not use hidden true executability or true utility. The implement
 
 ## Numerical Check
 
-`python -m bonoptions.experiments.run_all` writes `results/finite_n_validation.csv`. The claim audit requires the Monte Carlo mean to match the finite-N law with mean absolute error below `0.055`; the current generated audit passes.
+`python -m skill_handoff_audit.experiments.run_all` writes `results/finite_n_validation.csv`. The claim audit requires the Monte Carlo mean to match the rank-tail law with mean absolute error below `0.055`; the current generated audit passes.

@@ -3,9 +3,9 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "bonoptions"
+name = "skill-handoff-audit"
 version = "0.1.0"
-description = "Best-of-N option-boundary failure simulator and repair experiments for hierarchical robot skills."
+description = "Handoff-feasibility audits for proxy-tail planning over hierarchical robot skills."
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
@@ -20,7 +20,7 @@ dependencies = [
 dev = ["pytest>=8.0"]
 
 [tool.setuptools.packages.find]
-include = ["bonoptions*"]
+include = ["skill_handoff_audit*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

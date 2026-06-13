@@ -5,8 +5,8 @@ from typing import Iterable, Sequence
 
 import numpy as np
 
-from bonoptions.core import CandidatePlan, OptionWorld, SkillOption
-from bonoptions.scoring import ProxyScorer
+from skill_handoff_audit.core import CandidatePlan, OptionWorld, SkillOption
+from skill_handoff_audit.scoring import ProxyScorer
 
 
 def _weighted_choice(
@@ -20,7 +20,7 @@ def _weighted_choice(
 
 
 @dataclass
-class BestOfNPlanner:
+class ProxyTailPlanner:
     world: OptionWorld
     scorer: ProxyScorer
     proposal_temperature: float = 0.62
@@ -40,8 +40,8 @@ class BestOfNPlanner:
             ambition = np.exp(0.24 * rewards + 0.09 * spans)
             weights = locality * ambition
             if rng.random() < 0.08:
-                # Exploration produces occasional abstract jumps. Best-of-N is
-                # what makes those rare but high-proxy jumps matter.
+                # Exploration produces occasional abstract jumps; proxy-tail
+                # selection is what makes those rare high-proxy jumps matter.
                 weights = 0.25 * weights + 0.75 * ambition
             option = _weighted_choice(rng, options, weights)
             option_ids.append(option.option_id)
@@ -90,7 +90,7 @@ class BestOfNPlanner:
 
 
 @dataclass(frozen=True)
-class BoundaryCalibratedOptionSieve:
+class HandoffCalibratedSieve:
     """Repair method using only public option-boundary evidence."""
 
     penalty: float = 2.35
@@ -127,12 +127,12 @@ class BoundaryCalibratedOptionSieve:
         return max(pool, key=self.rank_score)
 
 
-def finite_n_selected_expectation(
+def rank_tail_selected_expectation(
     population: Sequence[CandidatePlan],
     ns: Iterable[int],
     metric: str = "true_utility",
 ) -> dict[int, float]:
-    """Exact with-replacement law for utility after selecting the max proxy item.
+    """Exact with-replacement law for utility after selecting the proxy-tail item.
 
     For a finite proposal population sampled uniformly with replacement, an item
     at proxy rank r is selected iff all N draws are at or below rank r and at

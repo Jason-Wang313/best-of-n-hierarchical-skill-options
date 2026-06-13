@@ -4,7 +4,7 @@ import shutil
 
 import pandas as pd
 
-from bonoptions.experiments.common import (
+from skill_handoff_audit.experiments.common import (
     FIGURES,
     PAPER_FIGURES,
     RESULTS,
@@ -16,7 +16,7 @@ from bonoptions.experiments.common import (
     run_selection_sweep,
     summarize_selection,
 )
-from bonoptions.experiments.run_claim_audit import audit_claims
+from skill_handoff_audit.experiments.run_claim_audit import audit_claims
 
 
 def main() -> None:
@@ -55,10 +55,10 @@ def main() -> None:
     finite.to_csv(RESULTS / "finite_n_validation.csv", index=False)
 
     figure_paths = [
-        FIGURES / "bon_degradation.png",
+        FIGURES / "handoff_tail_degradation.png",
         FIGURES / "repair_comparison.png",
         FIGURES / "controls.png",
-        FIGURES / "finite_n_law.png",
+        FIGURES / "rank_tail_calibration.png",
     ]
     plot_degradation(df, figure_paths[0])
     plot_repair(df, figure_paths[1])

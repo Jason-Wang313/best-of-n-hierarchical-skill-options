@@ -2,16 +2,10 @@
   "all_passed": true,
   "claims": {
     "boundary_sieve_improves_large_N": {
-      "description": "Boundary-Calibrated Option Sieve improves large-N utility and executability.",
+      "description": "Handoff-Calibrated Sieve improves large-budget utility and executability.",
       "status": "pass",
       "threshold": 0.0,
       "value": 0.5282484452541282
-    },
-    "finite_N_law_matches_monte_carlo": {
-      "description": "Exact finite-population order-statistic law matches Monte Carlo.",
-      "status": "pass",
-      "threshold": 0.055,
-      "value": 0.01057467319889758
     },
     "oracle_control_does_not_show_failure": {
       "description": "An oracle-feasibility scorer does not suffer the same degradation.",
@@ -19,8 +13,14 @@
       "threshold": 0.95,
       "value": 8.983621533283744
     },
+    "rank_tail_calibration_matches_monte_carlo": {
+      "description": "Rank-tail calibration law matches Monte Carlo.",
+      "status": "pass",
+      "threshold": 0.055,
+      "value": 0.01057467319889758
+    },
     "raw_executability_degrades": {
-      "description": "Raw Best-of-N loses option-chain executability at high N.",
+      "description": "Proxy-tail selection loses option-chain executability at high N.",
       "status": "pass",
       "threshold": 0.72,
       "value": 0.15157013359874036
