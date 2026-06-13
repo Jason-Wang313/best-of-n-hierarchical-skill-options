@@ -16,6 +16,7 @@ from skill_handoff_audit.experiments.common import (
     run_selection_sweep,
     summarize_selection,
 )
+from skill_handoff_audit.experiments.run_handoff_robustness import run_handoff_robustness
 from skill_handoff_audit.experiments.run_claim_audit import audit_claims
 
 
@@ -67,6 +68,7 @@ def main() -> None:
     for path in figure_paths:
         shutil.copy2(path, PAPER_FIGURES / path.name)
 
+    run_handoff_robustness()
     audit_claims(selection_path=RESULTS / "all_selection.csv", finite_path=RESULTS / "finite_n_validation.csv")
     print(f"wrote {RESULTS / 'all_selection.csv'}")
     print(f"wrote {RESULTS / 'finite_n_validation.csv'}")

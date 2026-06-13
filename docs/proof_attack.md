@@ -40,6 +40,12 @@ No. It explains how selection concentrates on high proxy ranks. Degradation requ
 
 The repair must not use hidden true executability or true utility. The implementation test `test_boundary_sieve_does_not_reference_hidden_true_labels` inspects the sieve methods, and the method uses only public diagnostics.
 
+The v3 noisy-boundary selector is checked the same way: tests inspect the component and noisy-estimator selectors and ensure they do not reference hidden `true_` fields.
+
+## Attack 6: Rank Law As Main Contribution
+
+The rank-tail identity is not the main contribution. It is a calibration check that verifies the selected-rank accounting. The paper's distinct contribution is the option-handoff mechanism plus boundary-channel, cross-library, and diagnostic-noise evidence.
+
 ## Numerical Check
 
 `python -m skill_handoff_audit.experiments.run_all` writes `results/finite_n_validation.csv`. The claim audit requires the Monte Carlo mean to match the rank-tail law with mean absolute error below `0.055`; the current generated audit passes.

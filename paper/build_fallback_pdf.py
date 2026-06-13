@@ -50,7 +50,7 @@ def add_image_page(pdf: PdfPages, image_path: Path, title: str) -> None:
 
 def main() -> None:
     FINAL.mkdir(parents=True, exist_ok=True)
-    out = FINAL / "iclr_submission.pdf"
+    out = FINAL / "best of n hierarchical skill options-v3.pdf"
     paragraphs = [
         "Handoff-Feasibility Audits for Hierarchical Skill-Chain Planners",
         "Anonymous ICLR-style draft fallback. Local LaTeX compilation was unavailable or failed; see paper/final/build_log.md for the exact build status.",
@@ -62,6 +62,8 @@ def main() -> None:
         add_text_page(pdf, "Handoff-Feasibility Audits", paragraphs)
         add_image_page(pdf, PAPER / "figures" / "handoff_tail_degradation.png", "Proxy-Tail Handoff Degradation")
         add_image_page(pdf, PAPER / "figures" / "repair_comparison.png", "Boundary Sieve Repair")
+        add_image_page(pdf, PAPER / "figures" / "boundary_component_ablation.png", "Boundary Component Ablation")
+        add_image_page(pdf, PAPER / "figures" / "diagnostic_noise_sensitivity.png", "Diagnostic Noise Sensitivity")
         add_image_page(pdf, PAPER / "figures" / "rank_tail_calibration.png", "Rank-Tail Calibration")
     print(out)
 

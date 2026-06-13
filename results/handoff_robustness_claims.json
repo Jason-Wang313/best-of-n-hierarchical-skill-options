@@ -1,0 +1,40 @@
+{
+  "all_passed": true,
+  "claims": {
+    "component_full_beats_best_single_boundary_channel": {
+      "description": "Full handoff evidence beats the best single public boundary channel.",
+      "status": "pass",
+      "threshold": 0.04,
+      "value": 0.11644391745246724
+    },
+    "component_full_reduces_boundary_risk": {
+      "description": "Full handoff evidence lowers selected public boundary risk relative to proxy tail.",
+      "status": "pass",
+      "threshold": 0.75,
+      "value": 0.5815405716796168
+    },
+    "library_seed_grid_repair_improves_mean": {
+      "ci_high": 0.5199173199834827,
+      "ci_low": 0.31674654373214484,
+      "description": "The repair improves mean true utility across multiple independently sampled option libraries.",
+      "status": "pass",
+      "threshold": 0.15,
+      "value": 0.41811699983722933
+    },
+    "moderate_noisy_diagnostics_still_help": {
+      "ci_high": 1.1629113966445008,
+      "ci_low": 0.47337615040085784,
+      "description": "Noisy public boundary estimates still improve selected utility at moderate noise.",
+      "status": "pass",
+      "threshold": 0.05,
+      "value": 0.7987397477574766
+    },
+    "severe_diagnostic_noise_exposes_failure_boundary": {
+      "description": "Clean handoff diagnostics recover more value than severely corrupted diagnostics.",
+      "status": "pass",
+      "threshold": 0.15,
+      "value": 0.38777228810379566
+    }
+  },
+  "robustness_path": "C:\\Users\\wangz\\best of n hierarchical skill options\\results\\handoff_robustness.csv"
+}

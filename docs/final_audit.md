@@ -10,11 +10,13 @@
 
 5. **Strongest repair result.** Handoff-Calibrated Sieve improves large-budget true utility and executability using public boundary diagnostics only.
 
-6. **Biggest weaknesses.** The environment is a controlled mechanism simulator, not a benchmark robot suite; the repair uses hand-designed boundary evidence; and the experiments validate the failure mode rather than claiming broad real-robot performance.
+6. **V3 robustness result.** The expanded pass adds boundary-channel ablations, six independently sampled option-library seeds, and noisy diagnostic-estimator sensitivity. Full handoff evidence beats any single channel, cross-library repair has a positive bootstrap interval, and severe diagnostic noise exposes the expected failure boundary.
 
-7. **Paper-worthiness.** Paper-worthy v1 as a mechanism paper, but it needs benchmark validation and learned boundary estimators before submission to a robotics-heavy venue.
+7. **Biggest weaknesses.** The environment is a controlled mechanism simulator, not a benchmark robot suite; the repair uses hand-designed boundary evidence; and the experiments validate the failure mode rather than claiming broad real-robot performance.
 
-8. **Final PDF location.** Expected repository path: `paper/final/iclr_submission.pdf`. Expected copied path: `C:\Users\wangz\Downloads\iclr_submission_hierarchical_options.pdf`.
+8. **Paper-worthiness.** Submission-ready as a mechanism paper after the v3 pass, with a clear claim boundary. It still needs benchmark validation and learned boundary estimators before claiming robotics-scale performance.
+
+9. **Final PDF location.** Expected repository path: `paper/final/best of n hierarchical skill options-v3.pdf`. Desktop publication is a post-verification step only.
 
 ## Claim Status
 
@@ -24,3 +26,8 @@
 - `boundary_sieve_improves_large_N`: pass (0.5282 vs 0.0000)
 - `oracle_control_does_not_show_failure`: pass (8.9836 vs 0.9500)
 - `rank_tail_calibration_matches_monte_carlo`: pass (0.0106 vs 0.0550)
+- `component_full_beats_best_single_boundary_channel`: pass (0.1164 vs 0.0400)
+- `component_full_reduces_boundary_risk`: pass (0.5815 vs 0.7500)
+- `library_seed_grid_repair_improves_mean`: pass (0.4181 vs 0.1500)
+- `moderate_noisy_diagnostics_still_help`: pass (0.7987 vs 0.0500)
+- `severe_diagnostic_noise_exposes_failure_boundary`: pass (0.3878 vs 0.1500)

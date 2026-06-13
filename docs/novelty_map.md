@@ -38,6 +38,12 @@ The mechanism is architecture-specific:
 
 The repair, Handoff-Calibrated Sieve, is boundary-specific: it does not need hidden execution labels, only public evidence about handoff surprise, initiation margins, and termination uncertainty.
 
+The v3 pass strengthens the angle by testing the boundary mechanism itself rather than adding another generic candidate-budget plot:
+
+- Boundary-channel ablations show that full handoff evidence beats initiation-only, drift-only, reachability-only, surprise-only, and chain-estimate-only variants.
+- Cross-library seed checks show the same fixed selector improving paired selections across independently sampled option libraries.
+- Diagnostic-noise sensitivity states the expected failure boundary: the repair depends on informative learned handoff estimates and degrades when those estimates are severely corrupted.
+
 ## Reviewer Attack Surface
 
 - The simulator is controlled and low-dimensional.
@@ -45,7 +51,8 @@ The repair, Handoff-Calibrated Sieve, is boundary-specific: it does not need hid
 - The repair may look obvious unless the paper shows that proxy-tail planning specifically selects the unsafe handoff tail.
 - The rank-tail calibration law is exact but modest.
 - Claims must avoid implying real robot benchmark superiority.
+- The next paper version must not present diagnostic-noise robustness as unlimited; severe noise is explicitly a failure case.
 
 ## Most Worth Pursuing
 
-Position the work as a mechanism paper with a falsifiable handoff audit, rank-tail calibration, and a repair that defines what real systems should estimate. The strongest next experiment would plug learned initiation/termination estimators into a real skill-chaining benchmark.
+Position the work as a mechanism paper with a falsifiable handoff audit, rank-tail calibration, channel ablations, cross-library stress, and a repair that defines what real systems should estimate. The strongest next experiment would plug learned initiation/termination estimators into a real skill-chaining benchmark.

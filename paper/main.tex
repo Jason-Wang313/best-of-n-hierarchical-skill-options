@@ -18,41 +18,60 @@
 \maketitle
 
 \begin{abstract}
-Hierarchical robot planners compose learned skills, options, and subgoals across long horizons. Their failure modes are often concentrated at handoffs: an option may terminate outside the next option's initiation support, accumulate transition drift, or produce an abstract state that looks valuable but is no longer executable. We study this as a handoff-feasibility audit for proxy-tail planning. A high-level proxy selects the most promising plan from a candidate pool, while public boundary diagnostics measure initiation violation, termination drift, reachability gap, boundary surprise, and estimated chain executability. In a controlled option-chain simulator, increasing candidate budget raises the selected proxy score by \(7.52\), but the selected chain's executability at \(N=512\) falls to \(15.2\%\) of its \(N=1\) value. A Handoff-Calibrated Sieve, using only public boundary evidence, improves large-budget true utility by \(0.53\) and improves executability. Oracle, calibrated, random, and anti-correlated controls show that the degradation is tied to proxy-boundary miscalibration rather than candidate count alone. The paper is a mechanism study and diagnostic target for real skill-chain planners, not a benchmark robotics claim.
+Hierarchical robot planners compose learned skills, options, and subgoals across long horizons. Their failures often occur at the interfaces between skills: an option may terminate outside the next option's initiation support, accumulate abstract-state drift, or produce a high-scoring subgoal sequence that is no longer executable. We study this failure as a handoff-feasibility audit for planners that sample many high-level skill chains and execute the highest proxy-scoring chain. The contribution is not another generic proxy-overoptimization curve. It is an option-specific audit that measures initiation violation, termination drift, reachability gap, boundary surprise, and estimated chain executability before execution. In a controlled option-chain simulator, increasing the candidate budget raises selected proxy score by \(7.52\), while selected executability at \(N=512\) falls to \(15.2\%\) of its \(N=1\) value. A Handoff-Calibrated Sieve, using only public boundary evidence, improves large-budget true utility by \(0.53\). Robustness checks add boundary-channel ablations, six independently sampled option-library seeds, and noisy diagnostic-estimator sensitivity. Across the library grid the sieve improves mean selected utility by \(0.42\) with a bootstrap \(95\%\) interval \([0.32,0.52]\); full handoff evidence beats the best single boundary channel by \(0.12\); and severe diagnostic noise exposes the expected failure boundary. The paper is a mechanism study and diagnostic target for real skill-chain planners, not a benchmark robotics claim.
 \end{abstract}
 
 \section{Introduction}
 
-Long-horizon robotic behavior is often built by composing temporally extended skills. Temporal abstraction is useful because a planner can reason over a shorter sequence of options, but every option boundary introduces a fragile interface. The next skill may not be initiable from the previous skill's stochastic termination state; a large abstract jump may exceed the reliable span of the learned controller; and a high-level proxy may reward ambition without measuring handoff feasibility.
+Long-horizon robotic behavior is often built by composing temporally extended skills. Temporal abstraction is useful because a planner can reason over a shorter sequence of options, but every option boundary introduces a fragile interface. The next skill may not be initiable from the previous skill's stochastic termination state. A learned controller may be reliable only over a local span. A high-level score can reward ambition while ignoring whether the chosen chain is still executable.
 
-This paper studies the failure as a \emph{handoff-feasibility audit}. We sample candidate option chains, score them with a high-level proxy, and inspect the selected proxy tail with public diagnostics. The audit asks whether the chosen chain remains executable as candidate budget increases, or whether selection concentrates on rare high-proxy plans whose boundary evidence is unsafe. The core contribution is not a generic reward-model overoptimization result. It is the option-specific mechanism: initiation support, termination drift, reachability, and boundary surprise jointly determine whether a selected skill chain can actually execute.
+This paper studies the failure as a \emph{handoff-feasibility audit}. A high-level planner samples candidate option chains, scores them with a learned proxy, and executes the selected proxy-tail chain. The audit asks whether the selected chain remains executable as selection pressure increases, or whether the planner concentrates on rare high-proxy plans whose boundary evidence is unsafe. The core contribution is option-specific: initiation support, termination uncertainty, reachability, and boundary surprise jointly determine whether a selected skill chain can actually execute.
 
-We make three contributions. First, we define a controlled option-chain simulator where boundary feasibility is observable and can be attacked directly. Second, we evaluate proxy-tail planning, handoff-calibrated selection, and multiple scorer controls across candidate budgets up to \(N=512\). Third, we include a rank-tail calibration check that predicts selected utility from a finite proposal population; it is used only as a diagnostic lens, not as the main novelty.
+The paper is deliberately scoped as a controlled mechanism study. We do not claim robot benchmark superiority, universal degradation for every hierarchical planner, or an optimal repair algorithm. Instead, the submission asks a sharper question: if a hierarchical planner already exposes public boundary diagnostics, can those diagnostics predict and repair proxy-tail handoff failures without hidden execution labels?
+
+Our contributions are:
+\begin{itemize}
+\item A controlled option-chain simulator with observable initiation sets, stochastic terminations, reliable spans, and public handoff diagnostics.
+\item A Handoff-Calibrated Sieve that re-ranks candidate chains using public boundary evidence only. Source tests inspect the selector and forbid hidden true utility or true executability access.
+\item A bounded experimental suite covering candidate-budget sweeps, calibrated/oracle/random/anti-correlated controls, horizon stress, finite-population rank-tail validation, boundary-channel ablations, cross-library seeds, and noisy diagnostic-estimator sensitivity.
+\item A claim audit that regenerates the evidence ledger and marks every manuscript-level quantitative claim as pass/fail before the paper is built.
+\end{itemize}
 
 \section{Related Work}
 
-The options framework formalizes temporal abstraction through initiation sets, intra-option policies, and termination conditions \citep{sutton1999between,precup2000temporal}. Hierarchical RL methods such as MAXQ \citep{dietterich2000hierarchical}, surveys of HRL \citep{barto2003recent}, and option-critic \citep{bacon2017optioncritic} study how to learn or compose such abstractions. Robot skill chaining and task-and-motion planning also emphasize preconditions, postconditions, and execution feasibility.
+The options framework formalizes temporal abstraction through initiation sets, intra-option policies, and termination conditions \citep{sutton1999between,precup2000temporal}. Hierarchical RL methods such as MAXQ \citep{dietterich2000hierarchical}, surveys of HRL \citep{barto2003recent}, and option-critic \citep{bacon2017optioncritic} study how to learn or compose such abstractions. Skill chaining and task-and-motion planning emphasize preconditions, postconditions, and execution feasibility: a plan that is valid in an abstract graph can still fail at the physical handoff.
 
-Reward-model overoptimization \citep{gao2023scaling} explains why selecting strongly against an imperfect proxy can fail. This paper borrows that selection-pressure lens but does not repackage it as a new general theorem. The new question is where the proxy error comes from in hierarchical skill planning. We isolate the handoff boundary: initiation support, stochastic termination, reachability, and compounding abstract-state mismatch.
+Reward-model overoptimization \citep{gao2023scaling} explains why selecting strongly against an imperfect learned score can fail. This paper borrows that selection-pressure lens but does not present a new general theorem about reward models. The new question is where the proxy error comes from in hierarchical skill planning. We isolate the handoff boundary: initiation support, stochastic termination, reachability, and compounding abstract-state mismatch. The repair is therefore not a generic regularizer; it is a diagnostic re-ranking rule for option-chain interfaces.
 
 \section{Option-Handoff Model}
 
-We use a controlled option world rather than a benchmark suite so the mechanism is observable. Each option \(o\) has an initiation center \(c_o\), radius \(r_o\), stochastic termination mean \(m_o\), termination noise \(\sigma_o\), nominal reward \(R_o\), and reliable span \(d_o\). Given an abstract state estimate \(x_t\), initiation probability decreases with the margin \(r_o-|x_t-c_o|\). Long options can appear attractive under nominal reward but become unreliable when their span exceeds \(d_o\). Termination drift then propagates into the next handoff.
+We use a controlled option world rather than a benchmark suite so the mechanism is observable and falsifiable. Each option \(o\) has an initiation center \(c_o\), radius \(r_o\), stochastic termination mean \(m_o\), termination noise \(\sigma_o\), nominal reward \(R_o\), and reliable span \(d_o\). Given an abstract state estimate \(x_t\), initiation probability decreases with the margin \(r_o-|x_t-c_o|\). Long options can appear attractive under nominal reward but become unreliable when their span exceeds \(d_o\). Termination drift then propagates into the next handoff.
 
 A plan \(\tau=(o_1,\ldots,o_H)\) has hidden true executability \(E(\tau)\), true utility \(U(\tau)\), proxy score \(S(\tau)\), and public diagnostics
 \[
 D(\tau)=
-\{\text{initiation violation},\ \text{termination drift},\ \text{reachability gap},\ \text{boundary surprise}\}.
+\{\text{initiation violation},\ \text{termination drift},\ \text{reachability gap},\ \text{boundary surprise},\ \widehat E(\tau)\}.
 \]
 The miscalibrated proxy rewards nominal value and ambitious subgoal distance while under-penalizing unsafe boundary evidence. This creates a selected-tail failure surface: the proxy can assign high score to chains whose handoffs are least likely to execute.
+
+\paragraph{Public boundary risk.}
+The audit combines public diagnostics into a boundary-risk score:
+\[
+B(D)=v_{\mathrm{init}} + 0.80\,d_{\mathrm{term}} + 0.95\,g_{\mathrm{reach}} +
+0.65\,s_{\mathrm{surprise}} - 0.35\,\widehat E .
+\]
+The coefficients are intentionally simple and fixed before evaluation. They are not fitted to hidden true utility. The claim is that this public evidence is the right axis to inspect, not that these constants are optimal.
+
+\paragraph{Why these diagnostics are public.}
+The audit assumes the planner can inspect quantities a real hierarchical controller could estimate before execution: distance from a successor skill's initiation support, uncertainty in a predecessor's terminal state, whether the requested span exceeds a learned controller's reliable region, and whether the abstract boundary looks surprising under the option model. The simulator provides these quantities analytically so the mechanism can be isolated. A real deployment would replace them with learned estimators and uncertainty intervals; the diagnostic-noise experiment below tests exactly this pressure point.
 
 \section{Audit And Calibration}
 
 The proxy-tail selector chooses the candidate with highest proxy score from a candidate pool. The handoff-calibrated selector ranks the same candidates by
 \[
-S_{\mathrm{handoff}}(\tau)=S(\tau)-\lambda B(D(\tau)),
+S_{\mathrm{handoff}}(\tau)=S(\tau)-\lambda B(D(\tau)).
 \]
-where \(B\) combines initiation violation, termination drift, reachability gap, boundary surprise, and estimated chain executability. It uses no hidden execution labels, no true utility, and no oracle feasibility labels. Its purpose is diagnostic: if it repairs the failure, boundary evidence is the relevant axis.
+It uses no hidden execution labels, no true utility, and no oracle feasibility labels. Its purpose is diagnostic: if it repairs the failure, boundary evidence is the relevant axis.
 
 \paragraph{Rank-tail calibration check.}
 For a finite proposal population \(P=\{(S_i,U_i)\}_{i=1}^M\) sorted by proxy rank, with deterministic tie-breaking, the selected true utility under independent with-replacement sampling satisfies
@@ -65,7 +84,17 @@ The identity simply states how selected mass concentrates on high proxy ranks. I
 
 \section{Experiments}
 
-We run four checks. First, proxy-tail planning is swept over \(N \in \{1,2,4,8,16,32,64,128,256,512\}\). Second, Handoff-Calibrated Sieve is evaluated on the same candidate sets. Third, controls replace the miscalibrated proxy with calibrated, oracle, random, and anti-correlated scorers. Fourth, the rank-tail calibration identity is compared with Monte Carlo selection from a finite proposal population. All claims are audited by \verb|python -m skill_handoff_audit.experiments.run_claim_audit|.
+The suite is designed around reviewer attacks rather than a single flattering plot. All runs are bounded CPU/RAM experiments over finite candidate pools. The full command is:
+\begin{verbatim}
+python -m skill_handoff_audit.experiments.run_all
+python -m skill_handoff_audit.experiments.run_claim_audit
+\end{verbatim}
+The audit writes \verb|results/claim_audit.json| and \verb|docs/claims.md|. The main selection sweep uses \(N \in \{1,2,4,8,16,32,64,128,256,512\}\), 12 proposal seeds, horizon 4, and five scorer controls. Robustness checks use \(N=256\) to keep the extension practical while adding independently sampled option libraries and diagnostic-noise perturbations.
+
+\paragraph{Statistics and pairing.}
+All repair comparisons are paired on the same candidate pools. The raw proxy selector and each handoff-aware selector receive identical candidates; only the ranking rule changes. This matters because candidate generation can have high variance in a stochastic option library. Cross-library and noisy-diagnostic claims are reported as paired deltas with bootstrap intervals over seed units. The claim audit recomputes the pass/fail ledger from CSV outputs rather than trusting manuscript text.
+
+\subsection{Selection Pressure At Skill Handoffs}
 
 \begin{figure}[t]
 \centering
@@ -74,6 +103,10 @@ We run four checks. First, proxy-tail planning is swept over \(N \in \{1,2,4,8,1
 \label{fig:degradation}
 \end{figure}
 
+At \(N=512\), proxy-tail planning has a much higher proxy score than at \(N=1\), but selected executability is only \(15.2\%\) of the \(N=1\) value (Figure~\ref{fig:degradation}). True utility peaks at small \(N\) and then falls below zero under the miscalibrated proxy. The result supports the handoff-audit claim: candidate budget can amplify option-boundary errors rather than merely improving abstract plans.
+
+\subsection{Repair And Controls}
+
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/repair_comparison.png}
@@ -81,29 +114,78 @@ We run four checks. First, proxy-tail planning is swept over \(N \in \{1,2,4,8,1
 \label{fig:repair}
 \end{figure}
 
+Using the same candidates, Handoff-Calibrated Sieve improves large-budget true utility by \(0.53\), improves executability from \(0.0107\) to \(0.0527\), and reduces public boundary risk (Figure~\ref{fig:repair}). The repair is deliberately simple; it demonstrates that public handoff evidence is the relevant diagnostic axis in this controlled setting.
+
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.72\linewidth]{figures/rank_tail_calibration.png}
+\includegraphics[width=0.72\linewidth]{figures/controls.png}
+\caption{Oracle, calibrated, random, and anti-correlated controls isolate proxy-boundary miscalibration. Larger candidate sets are not sufficient to cause the observed failure.}
+\label{fig:controls}
+\end{figure}
+
+The oracle feasibility scorer does not show the same failure and improves with \(N\). The calibrated scorer is substantially more stable than the miscalibrated scorer. Random and anti-correlated scorers behave as negative controls. These controls suggest that the failure is not caused by candidate-set size alone; it appears when the high-level proxy is miscalibrated relative to option-boundary feasibility.
+
+\subsection{Which Boundary Evidence Matters?}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/boundary_component_ablation.png}
+\caption{Boundary-channel ablation at \(N=256\). Full public handoff evidence beats the best single channel by \(0.12\) true-utility units and reduces selected boundary risk to \(58.2\%\) of the proxy-tail baseline.}
+\label{fig:ablation}
+\end{figure}
+
+Ablating the public handoff score addresses a natural reviewer attack: perhaps one diagnostic, such as reachability gap, is carrying the result. Figure~\ref{fig:ablation} shows that this is not enough. Reachability-only is the strongest single channel, but full evidence improves selected true utility by an additional \(0.12\). Termination-drift-only is nearly indistinguishable from proxy-tail selection in this simulator because drift by itself does not capture whether the next option remains initiable. The result supports the paper's central mechanism: the handoff is a joint interface, not a single scalar failure mode.
+
+\subsection{Library Seeds And Diagnostic Noise}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.78\linewidth]{figures/library_seed_grid.png}
+\caption{Cross-library check. The same fixed sieve is evaluated across six independently sampled option libraries, not retuned per library.}
+\label{fig:library}
+\end{figure}
+
+The original mechanism could have been an artifact of one option library. The robustness pass therefore samples six independent option libraries and evaluates paired proxy-tail and sieve selections at \(N=256\). Mean utility improvement is \(0.42\), with bootstrap \(95\%\) interval \([0.32,0.52]\). The interval is not a population-level robotics guarantee, but it is stronger than a single-world anecdote and is produced by a reproducible script.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.76\linewidth]{figures/diagnostic_noise_sensitivity.png}
+\caption{Noisy diagnostic-estimator sensitivity. Moderate noise still helps; severe corruption exposes the failure boundary where the public handoff estimate stops carrying enough signal.}
+\label{fig:noise}
+\end{figure}
+
+Real systems will estimate initiation and termination evidence from data. We therefore corrupt the public boundary score with additive diagnostic noise before re-ranking candidates. At moderate noise scale \(0.5\), the noisy sieve still improves selected utility by \(0.80\), with bootstrap \(95\%\) interval \([0.47,1.16]\). At severe noise scale \(1.5\), the improvement drops sharply; clean diagnostics recover \(0.39\) more utility than severely corrupted diagnostics. This is a useful negative result: the method requires informative handoff estimates and should not be sold as robust to arbitrary diagnostic error.
+
+\subsection{Rank-Tail Diagnostic}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.70\linewidth]{figures/rank_tail_calibration.png}
 \caption{The rank-tail calibration identity matches Monte Carlo selection. Current mean absolute error is \(0.0106\).}
 \label{fig:rank}
 \end{figure}
 
-\paragraph{Main result.}
-At \(N=512\), proxy-tail planning has a much higher proxy score than at \(N=1\), but selected executability is only \(15.2\%\) of the \(N=1\) value. True utility peaks at small \(N\) and then falls below zero under the miscalibrated proxy. This supports the handoff-audit claim: candidate budget can amplify option-boundary errors rather than merely improving abstract plans.
+The finite-population identity in Section 4 is validated numerically in Figure~\ref{fig:rank}. The current mean absolute error against Monte Carlo selection is \(0.0106\). This check is intentionally modest. It explains how selection pressure concentrates on proxy ranks; the empirical handoff results establish that the high-proxy ranks are unsafe in this simulator.
 
-\paragraph{Repair.}
-Using the same candidates, Handoff-Calibrated Sieve improves large-budget true utility by \(0.53\), improves executability, and reduces public boundary risk. The repair is deliberately simple; it demonstrates that public handoff evidence is the right diagnostic axis in this controlled setting.
+\section{Claim Boundary And Reviewer Attacks}
 
-\paragraph{Controls.}
-The oracle feasibility scorer does not show the same failure and improves with \(N\). The calibrated scorer is substantially more stable than the miscalibrated scorer. Random and anti-correlated scorers behave as negative controls. These controls suggest that the failure is not caused by candidate-set size alone.
+The strongest version of the paper is not ``best-of-many planning is bad.'' The defensible claim is narrower: when a hierarchical option planner's proxy is miscalibrated around initiation support, termination uncertainty, and reachability, increasing candidate budget can select increasingly non-executable skill chains. Public boundary evidence can diagnose and partially repair the failure in a controlled option world.
 
-\section{Limitations}
+\paragraph{No benchmark robotics claim.}
+The simulator is low-dimensional and hand-designed. The paper should not be read as evidence that one robot planner outperforms another. Its role is to define a measurable failure mode and a reproducible audit target.
 
-The study is controlled and low-dimensional. The option diagnostics are hand-designed, and the sieve is not claimed to be a final robot algorithm. The results should not be read as benchmark evidence that one hierarchical planner outperforms another. They show a mechanism that real systems should measure: whether high-level proxy-tail planning is selecting plans from the unsafe handoff boundary.
+\paragraph{No hidden-label repair.}
+The sieve uses proxy score and public diagnostics only. It does not inspect true utility or hidden executability. The test suite includes source-level checks for this property.
+
+\paragraph{No universal theorem.}
+The rank-tail equation is exact for a finite proposal population under independent sampling with replacement. It does not cover adaptive planners, all proposal distributions, or real robot policies. The manuscript uses it as a calibration lens, not as a universal theory of hierarchy.
+
+\paragraph{No claim that hand-designed diagnostics are final.}
+The diagnostic-noise experiment makes the limitation explicit. Real systems need learned initiation, termination, and reachability estimators whose uncertainty is itself audited.
 
 \section{Conclusion}
 
-Proxy-tail planning can be unsafe for hierarchical skill planners when high-level scores are miscalibrated at option handoffs. The simulator exposes the mechanism, the rank-tail calibration check explains the selection pressure, and Handoff-Calibrated Sieve demonstrates that public boundary diagnostics can repair much of the large-budget degradation. The next step is to learn these diagnostics from robot skill data and evaluate them on benchmark long-horizon manipulation tasks.
+Proxy-tail planning can be unsafe for hierarchical skill planners when high-level scores are miscalibrated at option handoffs. The simulator exposes the mechanism, the rank-tail check explains selection pressure, and Handoff-Calibrated Sieve demonstrates that public boundary diagnostics can recover much of the large-budget degradation. The robustness pass strengthens the evidence with boundary-channel ablations, independent option-library seeds, and diagnostic-noise sensitivity. The next step is to learn these diagnostics from robot skill data and evaluate whether they predict execution failure on long-horizon manipulation suites.
 
 \bibliography{references}
 \bibliographystyle{iclr2026_conference}
@@ -116,14 +198,111 @@ The public commands are:
 \begin{verbatim}
 python -m skill_handoff_audit.experiments.run_smoke
 python -m skill_handoff_audit.experiments.run_all
+python -m skill_handoff_audit.experiments.run_handoff_robustness
 python -m skill_handoff_audit.experiments.run_claim_audit
 pytest
+.\scripts\build_paper.ps1
 \end{verbatim}
 
-The claim audit writes \verb|docs/claims.md| and \verb|results/claim_audit.json|.
+The generated artifacts used by the paper are:
+\begin{itemize}
+\item \verb|docs/claims.md| and \verb|results/claim_audit.json| for the claim ledger.
+\item \verb|results/handoff_robustness.csv| for the robustness rows.
+\item \verb|results/handoff_robustness_claims.json| for robustness pass/fail checks.
+\item The robustness figures copied into \verb|paper/figures/|.
+\end{itemize}
 
-\section{Claim Boundary}
+\section{Claim-Evidence Ledger}
 
-The paper claims a handoff-boundary mechanism in a controlled simulator. It does not claim real-robot benchmark superiority, universal degradation for all hierarchical planners, or that the proposed sieve is optimal.
+\begin{center}
+\begin{tabular}{lrr}
+\toprule
+Audited claim & Value & Threshold \\
+\midrule
+Proxy score increase from \(N=1\) to \(N=512\) & \(7.52\) & \(>1.00\) \\
+High-\(N\) executability ratio & \(0.152\) & \(<0.720\) \\
+Sieve large-\(N\) utility gain & \(0.53\) & \(>0.00\) \\
+Rank-tail Monte Carlo MAE & \(0.0106\) & \(<0.055\) \\
+Full evidence over best single channel & \(0.12\) & \(>0.04\) \\
+Full evidence boundary-risk ratio & \(0.582\) & \(<0.750\) \\
+Cross-library utility gain & \(0.42\) & \(>0.15\) \\
+Moderate-noise utility gain & \(0.80\) & \(>0.05\) \\
+Clean minus severe-noise recovery & \(0.39\) & \(>0.15\) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The generated claim audit contains the authoritative pass/fail status and exact file paths. The table above is a compact copy for review convenience; the JSON artifact remains the source of truth.
+
+\section{Additional Implementation Details}
+
+The option library contains local, bridge, and leap skills. Local skills have wider initiation support and smaller termination noise. Leap skills offer higher nominal reward and longer abstract distance, but they have narrower initiation support and larger reachability gaps. Candidate generation is biased toward locally plausible successors while preserving occasional exploratory jumps; proxy-tail selection determines whether those rare jumps dominate the selected chain.
+
+The robustness experiment keeps resource use bounded by reusing finite candidate pools. For each candidate pool, proxy-tail, boundary-channel ablations, noisy-boundary selectors, and paired library-seed comparisons are computed from the same generated plans. This reduces variance and prevents the robustness pass from turning into a large benchmark.
+
+\section{Simulator Metrics}
+
+This appendix records the exact semantics of the public diagnostics. Let \(x_t\) be the abstract state mean carried into an option and let \(\sigma_t\) be the planner's state uncertainty. For option \(o\), initiation violation is the positive margin
+\[
+v_{\mathrm{init}}(o,t)=\max(0, |x_t-c_o|-r_o).
+\]
+Reachability gap is the positive excess span
+\[
+g_{\mathrm{reach}}(o)=\max(0, |m_o-c_o|-d_o).
+\]
+Termination drift accumulates the option's terminal noise scale. Boundary surprise combines initiation mismatch and propagated state uncertainty; it is intentionally public because both quantities are available from the option model. Chain executability estimate \(\widehat E\) is an exponential public surrogate over these diagnostics. Hidden true executability additionally multiplies the simulator's actual initiation, span, and drift success probabilities and is withheld from all non-oracle selectors.
+
+True utility is nominal value times hidden executability minus a small horizon cost. This makes a high-reward but non-executable chain unattractive under the hidden target while allowing the miscalibrated proxy to overvalue it. The proxy is therefore wrong in an option-specific way: it underprices boundary evidence, not merely random reward noise.
+
+\section{Robustness Protocol}
+
+The boundary-channel ablation uses the same \(N=256\), horizon-4 candidate pools as the full public-boundary selector. Each ablated selector removes all but one public channel: initiation violation, termination drift, reachability gap, boundary surprise, or chain executability estimate. The audit passes only if the full boundary score beats the best single channel by more than \(0.04\) mean true-utility units and lowers selected public boundary risk to less than \(75\%\) of the proxy-tail baseline.
+
+The cross-library protocol samples six option libraries from independent world seeds. For each library and proposal seed, the raw proxy selector and full boundary selector receive the same candidate pool. The reported interval is a nonparametric bootstrap over paired utility deltas. This is not a claim about all robot domains; it is a check that the mechanism is not an artifact of one convenient option table.
+
+The diagnostic-noise protocol corrupts the public boundary score before selection:
+\[
+\widetilde B_i = B_i + \epsilon_i,\qquad
+\epsilon_i \sim \mathcal N(0, \alpha^2\,\mathrm{std}(B)^2),
+\]
+where \(\alpha\) is the diagnostic noise scale inside a candidate pool. The selector then ranks by \(S_i-\lambda \widetilde B_i\). It still cannot inspect true utility or hidden executability. Moderate noise tests whether the handoff signal can tolerate estimator error; severe noise is included as a falsification boundary.
+
+\section{Resource Bound}
+
+The full run is intentionally small-memory. Candidate plans are ordinary Python dataclass objects, and the largest finite pool used by the main sweep contains \(512\) candidates. The robustness pass reuses \(N=256\) pools rather than generating separate pools for every selector. This design keeps RAM low and makes the paper reproducible on a laptop, while still expanding the evidence beyond a single curve.
+
+The main suite and robustness suite are CPU-bound but deterministic under the recorded seeds. The smoke command uses smaller candidate pools for fast regression checks; the full command regenerates the paper figures and claim ledger. No experiment depends on external services or stochastic GPU kernels.
+
+\section{Harsh Self-Review}
+
+\paragraph{Novelty.}
+The paper would be weak if framed as a generic best-of-many or reward-model-overoptimization result. The final framing avoids that: it names option handoffs as the mechanism and tests initiation, termination, reachability, and boundary surprise directly.
+
+\paragraph{Rigor.}
+A single simulator world would be too fragile. The cross-library check and paired bootstrap interval address this without pretending to be a benchmark. A reviewer can still demand real robot validation; the paper concedes that as future work rather than overstating the controlled evidence.
+
+\paragraph{Baselines.}
+The controls include oracle, calibrated, random, and anti-correlated scorers. These do not prove superiority over every hierarchical planning method, but they do rule out the simplest attack that candidate count alone causes the degradation.
+
+\paragraph{Ablations.}
+The full handoff score is not allowed to hide behind one diagnostic. Single-channel ablations show reachability alone is helpful but insufficient, while termination drift alone is not enough in this world.
+
+\paragraph{Statistics.}
+The paper reports paired deltas where the candidate pool is shared and uses bootstrap intervals where feasible. It does not report p-values for broad real-world generalization because the experiment is a mechanism study, not a sampled robotics benchmark.
+
+\paragraph{Reproducibility.}
+The claim audit is intentionally mechanical: if a result file is missing, the scripts regenerate it; if a claim fails its threshold, the ledger fails. This reduces the risk that the manuscript drifts away from the code.
+
+\section{Scope For Future Work}
+
+The next empirical step is to replace hand-designed diagnostics with learned estimators from skill rollouts. The most important future benchmark is not a larger synthetic sweep; it is a long-horizon manipulation or mobile-manipulation setting where initiation-set likelihood, termination uncertainty, and reachability are estimated online and audited before execution.
+
+An appropriate benchmark extension should log the full candidate set, not only the executed plan. The audit needs to know whether unsafe handoffs are present in the high-proxy tail, whether the executed plan was selected from that tail, and whether a boundary-aware selector would have chosen a different plan from the same proposals. Without the candidate set, a failure can be misattributed to low-level controller noise rather than high-level selection pressure.
+
+Three learned estimators are especially important. First, the planner needs an initiation likelihood model for each skill conditioned on the predecessor's terminal-state distribution. Second, it needs a termination model that preserves uncertainty rather than only predicting a mean postcondition. Third, it needs a reachability or reliable-span estimate for ambitious subgoals. The synthetic diagnostics in this paper are controlled stand-ins for these estimators, not replacements.
+
+The mechanism is also falsifiable. If a real skill-chain benchmark shows no relationship between high-proxy rank and boundary risk, the proposed audit would not explain its failures. If noisy learned diagnostics cannot beat proxy-tail selection on paired candidate pools, the handoff evidence is not informative enough. If a calibrated high-level scorer already prices initiation, termination, and reachability correctly, the sieve should become unnecessary. These are useful failure modes for the proposed audit rather than exceptions to hide.
+
+Finally, future work should evaluate interventions beyond re-ranking: candidate generation that avoids unsupported initiation regions, uncertainty-aware option termination models, and training objectives that penalize high proxy scores on non-executable handoffs. The current paper isolates the diagnosis; a deployed robot system will need to make that diagnosis part of the planner's learning loop.
 
 \end{document}

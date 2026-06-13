@@ -5,6 +5,7 @@ The paper should only make claims whose checks pass here.
 
 - Results file: `C:\Users\wangz\best of n hierarchical skill options\results\all_selection.csv`
 - Finite-N file: `C:\Users\wangz\best of n hierarchical skill options\results\finite_n_validation.csv`
+- Robustness file: `C:\Users\wangz\best of n hierarchical skill options\results\handoff_robustness.csv`
 - All claims passed: `True`
 
 | Claim | Status | Value | Threshold | Meaning |
@@ -15,3 +16,8 @@ The paper should only make claims whose checks pass here.
 | `boundary_sieve_improves_large_N` | pass | 0.5282 | 0.0000 | Handoff-Calibrated Sieve improves large-budget utility and executability. |
 | `oracle_control_does_not_show_failure` | pass | 8.9836 | 0.9500 | An oracle-feasibility scorer does not suffer the same degradation. |
 | `rank_tail_calibration_matches_monte_carlo` | pass | 0.0106 | 0.0550 | Rank-tail calibration law matches Monte Carlo. |
+| `component_full_beats_best_single_boundary_channel` | pass | 0.1164 | 0.0400 | Full handoff evidence beats the best single public boundary channel. |
+| `component_full_reduces_boundary_risk` | pass | 0.5815 | 0.7500 | Full handoff evidence lowers selected public boundary risk relative to proxy tail. |
+| `library_seed_grid_repair_improves_mean` | pass | 0.4181 | 0.1500 | The repair improves mean true utility across multiple independently sampled option libraries. |
+| `moderate_noisy_diagnostics_still_help` | pass | 0.7987 | 0.0500 | Noisy public boundary estimates still improve selected utility at moderate noise. |
+| `severe_diagnostic_noise_exposes_failure_boundary` | pass | 0.3878 | 0.1500 | Clean handoff diagnostics recover more value than severely corrupted diagnostics. |

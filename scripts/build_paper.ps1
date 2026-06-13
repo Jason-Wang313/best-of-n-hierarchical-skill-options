@@ -3,14 +3,10 @@ $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $PSScriptRoot
 $Paper = Join-Path $Root "paper"
 $Final = Join-Path $Paper "final"
-$Downloads = Join-Path $HOME "Downloads"
-$DownloadPdf = Join-Path $Downloads "iclr_submission_hierarchical_options.pdf"
-$DesktopPdf = Join-Path (Join-Path $HOME "OneDrive\Desktop") "best of n hierarchical skill options-v2.pdf"
+$RepoPdf = Join-Path $Final "best of n hierarchical skill options-v3.pdf"
 $Log = Join-Path $Final "build_log.md"
 
 New-Item -ItemType Directory -Force -Path $Final | Out-Null
-New-Item -ItemType Directory -Force -Path $Downloads | Out-Null
-New-Item -ItemType Directory -Force -Path (Split-Path -Parent $DesktopPdf) | Out-Null
 
 $pdflatex = Get-Command pdflatex -ErrorAction SilentlyContinue
 $bibtex = Get-Command bibtex -ErrorAction SilentlyContinue
@@ -35,7 +31,7 @@ if ($pdflatex -and $bibtex) {
     & bibtex main | Tee-Object -FilePath (Join-Path $Final "bibtex.log") | Out-Null
     & pdflatex -interaction=nonstopmode -halt-on-error main.tex | Tee-Object -FilePath (Join-Path $Final "pdflatex_2.log") | Out-Null
     & pdflatex -interaction=nonstopmode -halt-on-error main.tex | Tee-Object -FilePath (Join-Path $Final "pdflatex_3.log") | Out-Null
-    Copy-Item -Force (Join-Path $Paper "main.pdf") (Join-Path $Final "iclr_submission.pdf")
+    Copy-Item -Force (Join-Path $Paper "main.pdf") $RepoPdf
     $compiled = $true
     $messages.Add("Status: compiled LaTeX successfully.")
   }
@@ -64,13 +60,8 @@ if (-not $compiled) {
   }
 }
 
-$RepoPdf = Join-Path $Final "iclr_submission.pdf"
 if (Test-Path $RepoPdf) {
-  Copy-Item -Force $RepoPdf $DownloadPdf
-  Copy-Item -Force $RepoPdf $DesktopPdf
   $messages.Add("Repository PDF: $RepoPdf")
-  $messages.Add("Downloads PDF: $DownloadPdf")
-  $messages.Add("Desktop PDF: $DesktopPdf")
 }
 else {
   $messages.Add("Error: no PDF artifact was produced.")
@@ -79,5 +70,3 @@ else {
 $messages | Set-Content -Encoding UTF8 $Log
 Write-Host "Wrote $Log"
 Write-Host "Wrote $RepoPdf"
-Write-Host "Copied to $DownloadPdf"
-Write-Host "Copied to $DesktopPdf"

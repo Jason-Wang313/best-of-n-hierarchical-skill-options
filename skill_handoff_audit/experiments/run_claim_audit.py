@@ -35,13 +35,24 @@ def audit_claims(
     selection_path: Path = RESULTS / "all_selection.csv",
     finite_path: Path = RESULTS / "finite_n_validation.csv",
 ) -> dict:
+    robustness_path = RESULTS / "handoff_robustness.csv"
     if not selection_path.exists() or not finite_path.exists():
         from skill_handoff_audit.experiments.run_all import main as run_all_main
 
         run_all_main()
+    if not robustness_path.exists():
+        from skill_handoff_audit.experiments.run_handoff_robustness import (
+            run_handoff_robustness,
+        )
+
+        run_handoff_robustness()
 
     df = pd.read_csv(selection_path)
     finite = pd.read_csv(finite_path)
+    robustness = pd.read_csv(robustness_path)
+    from skill_handoff_audit.experiments.run_handoff_robustness import audit_robustness_claims
+
+    robustness_payload = audit_robustness_claims(robustness)
     max_n = int(df[(df["dataset"] == "selection") & (df["horizon"] == 4)]["N"].max())
 
     raw_exec_1 = _mean_at(df, mode="miscalibrated", selector="proxy_tail", n=1, metric="true_executability")
@@ -107,9 +118,11 @@ def audit_claims(
             "Rank-tail calibration law matches Monte Carlo.",
         ),
     }
+    claims.update(robustness_payload["claims"])
     payload = {
         "selection_path": str(selection_path),
         "finite_path": str(finite_path),
+        "robustness_path": str(robustness_path),
         "max_N": max_n,
         "all_passed": all(item["status"] == "pass" for item in claims.values()),
         "claims": claims,
@@ -129,6 +142,7 @@ def _write_claims_markdown(payload: dict) -> None:
         "",
         f"- Results file: `{payload['selection_path']}`",
         f"- Finite-N file: `{payload['finite_path']}`",
+        f"- Robustness file: `{payload['robustness_path']}`",
         f"- All claims passed: `{payload['all_passed']}`",
         "",
         "| Claim | Status | Value | Threshold | Meaning |",
@@ -159,11 +173,13 @@ def _write_final_audit(payload: dict) -> None:
         "",
         "5. **Strongest repair result.** Handoff-Calibrated Sieve improves large-budget true utility and executability using public boundary diagnostics only.",
         "",
-        "6. **Biggest weaknesses.** The environment is a controlled mechanism simulator, not a benchmark robot suite; the repair uses hand-designed boundary evidence; and the experiments validate the failure mode rather than claiming broad real-robot performance.",
+        "6. **V3 robustness result.** The expanded pass adds boundary-channel ablations, six independently sampled option-library seeds, and noisy diagnostic-estimator sensitivity. Full handoff evidence beats any single channel, cross-library repair has a positive bootstrap interval, and severe diagnostic noise exposes the expected failure boundary.",
         "",
-        "7. **Paper-worthiness.** Paper-worthy v1 as a mechanism paper, but it needs benchmark validation and learned boundary estimators before submission to a robotics-heavy venue.",
+        "7. **Biggest weaknesses.** The environment is a controlled mechanism simulator, not a benchmark robot suite; the repair uses hand-designed boundary evidence; and the experiments validate the failure mode rather than claiming broad real-robot performance.",
         "",
-        "8. **Final PDF location.** Expected repository path: `paper/final/iclr_submission.pdf`. Expected copied path: `C:\\Users\\wangz\\Downloads\\iclr_submission_hierarchical_options.pdf`.",
+        "8. **Paper-worthiness.** Submission-ready as a mechanism paper after the v3 pass, with a clear claim boundary. It still needs benchmark validation and learned boundary estimators before claiming robotics-scale performance.",
+        "",
+        "9. **Final PDF location.** Expected repository path: `paper/final/best of n hierarchical skill options-v3.pdf`. Desktop publication is a post-verification step only.",
         "",
         "## Claim Status",
         "",
