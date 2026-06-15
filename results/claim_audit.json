@@ -70,10 +70,41 @@
       "status": "pass",
       "threshold": 0.15,
       "value": 0.38777228810379566
+    },
+    "taxi_handoff_sieve_reduces_public_risk": {
+      "description": "Handoff-Calibrated Sieve must reduce selected public boundary risk on Taxi-v3.",
+      "status": "pass",
+      "threshold": -1.0,
+      "value": -3.0019845917310226
+    },
+    "taxi_handoff_sieve_repairs_return": {
+      "description": "Handoff-Calibrated Sieve must recover Taxi executed return over the proxy tail.",
+      "status": "pass",
+      "threshold": 8.0,
+      "value": 14.075
+    },
+    "taxi_oracle_headroom_positive": {
+      "description": "Taxi candidate pools must contain better in-pool chains than the proxy tail selects.",
+      "status": "pass",
+      "threshold": 10.0,
+      "value": 14.5
+    },
+    "taxi_proxy_tail_harms_return": {
+      "description": "On Gymnasium Taxi-v3, proxy-tail selection must reduce executed return relative to the first candidate.",
+      "status": "pass",
+      "threshold": -5.0,
+      "value": -14.5
+    },
+    "taxi_public_risk_control_repairs_return": {
+      "description": "A public-risk-only Taxi control must also repair return, showing the boundary signal is causal.",
+      "status": "pass",
+      "threshold": 8.0,
+      "value": 14.4
     }
   },
   "finite_path": "C:\\Users\\wangz\\best of n hierarchical skill options\\results\\finite_n_validation.csv",
   "max_N": 512,
   "robustness_path": "C:\\Users\\wangz\\best of n hierarchical skill options\\results\\handoff_robustness.csv",
-  "selection_path": "C:\\Users\\wangz\\best of n hierarchical skill options\\results\\all_selection.csv"
+  "selection_path": "C:\\Users\\wangz\\best of n hierarchical skill options\\results\\all_selection.csv",
+  "taxi_path": "C:\\Users\\wangz\\best of n hierarchical skill options\\results\\taxi_option_benchmark\\aggregate.json"
 }

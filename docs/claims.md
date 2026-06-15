@@ -6,6 +6,7 @@ The paper should only make claims whose checks pass here.
 - Results file: `C:\Users\wangz\best of n hierarchical skill options\results\all_selection.csv`
 - Finite-N file: `C:\Users\wangz\best of n hierarchical skill options\results\finite_n_validation.csv`
 - Robustness file: `C:\Users\wangz\best of n hierarchical skill options\results\handoff_robustness.csv`
+- Taxi benchmark file: `C:\Users\wangz\best of n hierarchical skill options\results\taxi_option_benchmark\aggregate.json`
 - All claims passed: `True`
 
 | Claim | Status | Value | Threshold | Meaning |
@@ -21,3 +22,8 @@ The paper should only make claims whose checks pass here.
 | `library_seed_grid_repair_improves_mean` | pass | 0.4181 | 0.1500 | The repair improves mean true utility across multiple independently sampled option libraries. |
 | `moderate_noisy_diagnostics_still_help` | pass | 0.7987 | 0.0500 | Noisy public boundary estimates still improve selected utility at moderate noise. |
 | `severe_diagnostic_noise_exposes_failure_boundary` | pass | 0.3878 | 0.1500 | Clean handoff diagnostics recover more value than severely corrupted diagnostics. |
+| `taxi_proxy_tail_harms_return` | pass | -14.5000 | -5.0000 | On Gymnasium Taxi-v3, proxy-tail selection must reduce executed return relative to the first candidate. |
+| `taxi_handoff_sieve_repairs_return` | pass | 14.0750 | 8.0000 | Handoff-Calibrated Sieve must recover Taxi executed return over the proxy tail. |
+| `taxi_handoff_sieve_reduces_public_risk` | pass | -3.0020 | -1.0000 | Handoff-Calibrated Sieve must reduce selected public boundary risk on Taxi-v3. |
+| `taxi_oracle_headroom_positive` | pass | 14.5000 | 10.0000 | Taxi candidate pools must contain better in-pool chains than the proxy tail selects. |
+| `taxi_public_risk_control_repairs_return` | pass | 14.4000 | 8.0000 | A public-risk-only Taxi control must also repair return, showing the boundary signal is causal. |

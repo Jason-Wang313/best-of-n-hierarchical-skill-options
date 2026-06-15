@@ -50,7 +50,7 @@ def add_image_page(pdf: PdfPages, image_path: Path, title: str) -> None:
 
 def main() -> None:
     FINAL.mkdir(parents=True, exist_ok=True)
-    out = FINAL / "best of n hierarchical skill options-v3.pdf"
+    out = FINAL / "best of n hierarchical skill options-v4.pdf"
     paragraphs = [
         "Handoff-Feasibility Audits for Hierarchical Skill-Chain Planners",
         "Anonymous ICLR-style draft fallback. Local LaTeX compilation was unavailable or failed; see paper/final/build_log.md for the exact build status.",

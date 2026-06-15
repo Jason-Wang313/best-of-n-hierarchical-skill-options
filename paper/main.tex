@@ -2,12 +2,20 @@
 
 \usepackage{iclr2026_conference,times}
 \input{math_commands.tex}
+\usepackage{xcolor}
 \usepackage{hyperref}
 \usepackage{url}
 \usepackage{booktabs}
 \usepackage{graphicx}
 \usepackage{amsmath}
 \usepackage{amssymb}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!55!black,
+  citecolor=green!45!black,
+  urlcolor=blue!55!black
+}
 
 \title{Handoff-Feasibility Audits for Hierarchical Skill-Chain Planners}
 
@@ -18,7 +26,7 @@
 \maketitle
 
 \begin{abstract}
-Hierarchical robot planners compose learned skills, options, and subgoals across long horizons. Their failures often occur at the interfaces between skills: an option may terminate outside the next option's initiation support, accumulate abstract-state drift, or produce a high-scoring subgoal sequence that is no longer executable. We study this failure as a handoff-feasibility audit for planners that sample many high-level skill chains and execute the highest proxy-scoring chain. The contribution is not another generic proxy-overoptimization curve. It is an option-specific audit that measures initiation violation, termination drift, reachability gap, boundary surprise, and estimated chain executability before execution. In a controlled option-chain simulator, increasing the candidate budget raises selected proxy score by \(7.52\), while selected executability at \(N=512\) falls to \(15.2\%\) of its \(N=1\) value. A Handoff-Calibrated Sieve, using only public boundary evidence, improves large-budget true utility by \(0.53\). Robustness checks add boundary-channel ablations, six independently sampled option-library seeds, and noisy diagnostic-estimator sensitivity. Across the library grid the sieve improves mean selected utility by \(0.42\) with a bootstrap \(95\%\) interval \([0.32,0.52]\); full handoff evidence beats the best single boundary channel by \(0.12\); and severe diagnostic noise exposes the expected failure boundary. The paper is a mechanism study and diagnostic target for real skill-chain planners, not a benchmark robotics claim.
+Hierarchical robot planners compose learned skills, options, and subgoals across long horizons. Their failures often occur at the interfaces between skills: an option may terminate outside the next option's initiation support, accumulate abstract-state drift, or produce a high-scoring subgoal sequence that is no longer executable. We study this failure as a handoff-feasibility audit for planners that sample many high-level skill chains and execute the highest proxy-scoring chain. The contribution is not another generic proxy-overoptimization curve. It is an option-specific audit that measures initiation violation, termination drift, reachability gap, boundary surprise, and estimated chain executability before execution. In a controlled option-chain simulator, increasing the candidate budget raises selected proxy score by \(7.52\), while selected executability at \(N=512\) falls to \(15.2\%\) of its \(N=1\) value. A Handoff-Calibrated Sieve, using only public boundary evidence, improves large-budget true utility by \(0.53\). Robustness checks add boundary-channel ablations, six independently sampled option-library seeds, noisy diagnostic-estimator sensitivity, and a standard Gymnasium Taxi-v3 option-chain benchmark. On Taxi-v3, proxy-tail selection lowers executed return by \(14.50\) relative to the first candidate; the handoff sieve recovers \(14.08\) return and reduces selected public boundary risk by \(3.00\). The paper is a mechanism study and diagnostic target for real skill-chain planners, not a benchmark robotics claim.
 \end{abstract}
 
 \section{Introduction}
@@ -42,6 +50,8 @@ Our contributions are:
 The options framework formalizes temporal abstraction through initiation sets, intra-option policies, and termination conditions \citep{sutton1999between,precup2000temporal}. Hierarchical RL methods such as MAXQ \citep{dietterich2000hierarchical}, surveys of HRL \citep{barto2003recent}, and option-critic \citep{bacon2017optioncritic} study how to learn or compose such abstractions. Skill chaining and task-and-motion planning emphasize preconditions, postconditions, and execution feasibility: a plan that is valid in an abstract graph can still fail at the physical handoff.
 
 Reward-model overoptimization \citep{gao2023scaling} explains why selecting strongly against an imperfect learned score can fail. This paper borrows that selection-pressure lens but does not present a new general theorem about reward models. The new question is where the proxy error comes from in hierarchical skill planning. We isolate the handoff boundary: initiation support, stochastic termination, reachability, and compounding abstract-state mismatch. The repair is therefore not a generic regularizer; it is a diagnostic re-ranking rule for option-chain interfaces.
+
+Gymnasium \citep{towers2024gymnasium} provides the Taxi-v3 benchmark used in the v4 standard-environment stress test. Taxi is not a robotics manipulation suite, but it is a useful option-chain environment because navigation, pickup, and dropoff macros have explicit initiation preconditions and illegal handoff penalties.
 
 \section{Option-Handoff Model}
 
@@ -87,6 +97,7 @@ The identity simply states how selected mass concentrates on high proxy ranks. I
 The suite is designed around reviewer attacks rather than a single flattering plot. All runs are bounded CPU/RAM experiments over finite candidate pools. The full command is:
 \begin{verbatim}
 python -m skill_handoff_audit.experiments.run_all
+python -m skill_handoff_audit.experiments.run_taxi_benchmark
 python -m skill_handoff_audit.experiments.run_claim_audit
 \end{verbatim}
 The audit writes \verb|results/claim_audit.json| and \verb|docs/claims.md|. The main selection sweep uses \(N \in \{1,2,4,8,16,32,64,128,256,512\}\), 12 proposal seeds, horizon 4, and five scorer controls. Robustness checks use \(N=256\) to keep the extension practical while adding independently sampled option libraries and diagnostic-noise perturbations.
@@ -156,6 +167,36 @@ The original mechanism could have been an artifact of one option library. The ro
 
 Real systems will estimate initiation and termination evidence from data. We therefore corrupt the public boundary score with additive diagnostic noise before re-ranking candidates. At moderate noise scale \(0.5\), the noisy sieve still improves selected utility by \(0.80\), with bootstrap \(95\%\) interval \([0.47,1.16]\). At severe noise scale \(1.5\), the improvement drops sharply; clean diagnostics recover \(0.39\) more utility than severely corrupted diagnostics. This is a useful negative result: the method requires informative handoff estimates and should not be sold as robust to arbitrary diagnostic error.
 
+\subsection{Gymnasium Taxi-v3 Option Benchmark}
+
+The controlled simulator is not enough for a submission-ready empirical claim, so v4 adds a standard Gymnasium Taxi-v3 benchmark \citep{towers2024gymnasium}. Each Taxi state is converted into a high-level option-chain problem over navigation-to-landmark, pickup, and dropoff macros. Candidate chains are executed with the real Taxi transition dynamics. The proxy overvalues chains containing ambitious destination and task-completion tokens while weakly penalizing illegal pickup/dropoff boundaries. Public handoff diagnostics measure pickup violation, dropoff violation, route excess, boundary surprise, and an estimated handoff success score. The final protocol uses held-out seeds 80--84, 16 Taxi starts per seed, and \(N \in \{1,2,4,8,16,32\}\).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/taxi_option_benchmark.png}
+\caption{Gymnasium Taxi-v3 option-chain benchmark. Proxy-tail selection prefers high-scoring but badly ordered pickup/dropoff handoffs. Handoff-Calibrated Sieve and the risk-only public-boundary control recover executed Taxi return from the same candidate pools.}
+\label{fig:taxi}
+\end{figure}
+
+\begin{table}[t]
+\centering
+\caption{Held-out Taxi-v3 effects at \(N=32\), mean with bootstrap \(95\%\) interval. Positive return deltas are better; negative risk deltas are better.}
+\label{tab:taxi}
+\begin{tabular}{lr}
+\toprule
+Effect & Mean \([95\%\ \mathrm{CI}]\) \\
+\midrule
+Proxy tail minus first candidate return & \(-14.50\ [-15.35,-13.55]\) \\
+Handoff sieve minus proxy-tail return & \(14.08\ [12.98,15.08]\) \\
+Risk-only control minus proxy-tail return & \(14.40\ [13.35,15.35]\) \\
+Oracle tail minus proxy-tail return & \(14.50\ [13.55,15.35]\) \\
+Handoff sieve minus proxy-tail public risk & \(-3.00\ [-3.23,-2.80]\) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Taxi-v3 supports the same mechanism under real benchmark transitions. The proxy tail chooses chains such as navigating to the destination, attempting dropoff before pickup, then recovering later; these chains can still eventually complete the task but pay large illegal-handoff penalties. The handoff sieve rejects those boundary violations and recovers almost all oracle headroom. The risk-only control also repairs the benchmark, which is not a weakness for this paper: it shows that the public boundary signal is causal and strong in Taxi-v3. The paper therefore claims Taxi as a standard option-chain stress test, not as evidence of robotics-scale manipulation performance.
+
 \subsection{Rank-Tail Diagnostic}
 
 \begin{figure}[t]
@@ -171,8 +212,8 @@ The finite-population identity in Section 4 is validated numerically in Figure~\
 
 The strongest version of the paper is not ``best-of-many planning is bad.'' The defensible claim is narrower: when a hierarchical option planner's proxy is miscalibrated around initiation support, termination uncertainty, and reachability, increasing candidate budget can select increasingly non-executable skill chains. Public boundary evidence can diagnose and partially repair the failure in a controlled option world.
 
-\paragraph{No benchmark robotics claim.}
-The simulator is low-dimensional and hand-designed. The paper should not be read as evidence that one robot planner outperforms another. Its role is to define a measurable failure mode and a reproducible audit target.
+\paragraph{No robot manipulation benchmark claim.}
+The simulator is low-dimensional and hand-designed, and Taxi-v3 is a standard discrete benchmark rather than a robot manipulation suite. The paper should not be read as evidence that one robot planner outperforms another. Its role is to define a measurable failure mode, verify it in a standard option-chain environment, and provide a reproducible audit target.
 
 \paragraph{No hidden-label repair.}
 The sieve uses proxy score and public diagnostics only. It does not inspect true utility or hidden executability. The test suite includes source-level checks for this property.
@@ -185,7 +226,7 @@ The diagnostic-noise experiment makes the limitation explicit. Real systems need
 
 \section{Conclusion}
 
-Proxy-tail planning can be unsafe for hierarchical skill planners when high-level scores are miscalibrated at option handoffs. The simulator exposes the mechanism, the rank-tail check explains selection pressure, and Handoff-Calibrated Sieve demonstrates that public boundary diagnostics can recover much of the large-budget degradation. The robustness pass strengthens the evidence with boundary-channel ablations, independent option-library seeds, and diagnostic-noise sensitivity. The next step is to learn these diagnostics from robot skill data and evaluate whether they predict execution failure on long-horizon manipulation suites.
+Proxy-tail planning can be unsafe for hierarchical skill planners when high-level scores are miscalibrated at option handoffs. The simulator exposes the mechanism, the rank-tail check explains selection pressure, and Handoff-Calibrated Sieve demonstrates that public boundary diagnostics can recover much of the large-budget degradation. The robustness pass strengthens the evidence with boundary-channel ablations, independent option-library seeds, diagnostic-noise sensitivity, and a Gymnasium Taxi-v3 benchmark where real transition rollouts penalize illegal pickup/dropoff handoffs. The next step is to learn these diagnostics from robot skill data and evaluate whether they predict execution failure on long-horizon manipulation suites.
 
 \bibliography{references}
 \bibliographystyle{iclr2026_conference}
@@ -199,6 +240,7 @@ The public commands are:
 python -m skill_handoff_audit.experiments.run_smoke
 python -m skill_handoff_audit.experiments.run_all
 python -m skill_handoff_audit.experiments.run_handoff_robustness
+python -m skill_handoff_audit.experiments.run_taxi_benchmark
 python -m skill_handoff_audit.experiments.run_claim_audit
 pytest
 .\scripts\build_paper.ps1
@@ -209,6 +251,7 @@ The generated artifacts used by the paper are:
 \item \verb|docs/claims.md| and \verb|results/claim_audit.json| for the claim ledger.
 \item \verb|results/handoff_robustness.csv| for the robustness rows.
 \item \verb|results/handoff_robustness_claims.json| for robustness pass/fail checks.
+\item \verb|results/taxi_option_benchmark/aggregate.json| for the Taxi-v3 standard benchmark.
 \item The robustness figures copied into \verb|paper/figures/|.
 \end{itemize}
 
@@ -228,6 +271,10 @@ Full evidence boundary-risk ratio & \(0.582\) & \(<0.750\) \\
 Cross-library utility gain & \(0.42\) & \(>0.15\) \\
 Moderate-noise utility gain & \(0.80\) & \(>0.05\) \\
 Clean minus severe-noise recovery & \(0.39\) & \(>0.15\) \\
+Taxi proxy-tail return harm & \(-14.50\) & \(<-5.00\) \\
+Taxi handoff-sieve return recovery & \(14.08\) & \(>8.00\) \\
+Taxi selected boundary-risk reduction & \(-3.00\) & \(<-1.00\) \\
+Taxi oracle headroom & \(14.50\) & \(>10.00\) \\
 \bottomrule
 \end{tabular}
 \end{center}

@@ -3,7 +3,7 @@ $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $PSScriptRoot
 $Paper = Join-Path $Root "paper"
 $Final = Join-Path $Paper "final"
-$RepoPdf = Join-Path $Final "best of n hierarchical skill options-v3.pdf"
+$RepoPdf = Join-Path $Final "best of n hierarchical skill options-v4.pdf"
 $Log = Join-Path $Final "build_log.md"
 
 New-Item -ItemType Directory -Force -Path $Final | Out-Null

@@ -36,6 +36,7 @@ def audit_claims(
     finite_path: Path = RESULTS / "finite_n_validation.csv",
 ) -> dict:
     robustness_path = RESULTS / "handoff_robustness.csv"
+    taxi_path = RESULTS / "taxi_option_benchmark" / "aggregate.json"
     if not selection_path.exists() or not finite_path.exists():
         from skill_handoff_audit.experiments.run_all import main as run_all_main
 
@@ -46,10 +47,16 @@ def audit_claims(
         )
 
         run_handoff_robustness()
+    if not taxi_path.exists():
+        from skill_handoff_audit.experiments.run_taxi_benchmark import run_taxi_benchmark
+
+        run_taxi_benchmark()
 
     df = pd.read_csv(selection_path)
     finite = pd.read_csv(finite_path)
     robustness = pd.read_csv(robustness_path)
+    with taxi_path.open("r", encoding="utf-8") as f:
+        taxi_payload = json.load(f)
     from skill_handoff_audit.experiments.run_handoff_robustness import audit_robustness_claims
 
     robustness_payload = audit_robustness_claims(robustness)
@@ -119,10 +126,58 @@ def audit_claims(
         ),
     }
     claims.update(robustness_payload["claims"])
+    claims.update(
+        {
+            name: {
+                "status": "pass" if bool(status) else "fail",
+                "value": float(taxi_payload["summary"][summary_key]["mean"]),
+                "threshold": float(threshold),
+                "description": description,
+            }
+            for name, status, summary_key, threshold, description in [
+                (
+                    "taxi_proxy_tail_harms_return",
+                    taxi_payload["claims"]["taxi_proxy_tail_harms_return"],
+                    "proxy_minus_first_return_ci",
+                    -5.0,
+                    "On Gymnasium Taxi-v3, proxy-tail selection must reduce executed return relative to the first candidate.",
+                ),
+                (
+                    "taxi_handoff_sieve_repairs_return",
+                    taxi_payload["claims"]["taxi_handoff_sieve_repairs_return"],
+                    "sieve_minus_proxy_return_ci",
+                    8.0,
+                    "Handoff-Calibrated Sieve must recover Taxi executed return over the proxy tail.",
+                ),
+                (
+                    "taxi_handoff_sieve_reduces_public_risk",
+                    taxi_payload["claims"]["taxi_handoff_sieve_reduces_public_risk"],
+                    "sieve_minus_proxy_risk_ci",
+                    -1.0,
+                    "Handoff-Calibrated Sieve must reduce selected public boundary risk on Taxi-v3.",
+                ),
+                (
+                    "taxi_oracle_headroom_positive",
+                    taxi_payload["claims"]["taxi_oracle_headroom_positive"],
+                    "oracle_minus_proxy_return_ci",
+                    10.0,
+                    "Taxi candidate pools must contain better in-pool chains than the proxy tail selects.",
+                ),
+                (
+                    "taxi_public_risk_control_repairs_return",
+                    taxi_payload["claims"]["taxi_public_risk_control_repairs_return"],
+                    "risk_only_minus_proxy_return_ci",
+                    8.0,
+                    "A public-risk-only Taxi control must also repair return, showing the boundary signal is causal.",
+                ),
+            ]
+        }
+    )
     payload = {
         "selection_path": str(selection_path),
         "finite_path": str(finite_path),
         "robustness_path": str(robustness_path),
+        "taxi_path": str(taxi_path),
         "max_N": max_n,
         "all_passed": all(item["status"] == "pass" for item in claims.values()),
         "claims": claims,
@@ -143,6 +198,7 @@ def _write_claims_markdown(payload: dict) -> None:
         f"- Results file: `{payload['selection_path']}`",
         f"- Finite-N file: `{payload['finite_path']}`",
         f"- Robustness file: `{payload['robustness_path']}`",
+        f"- Taxi benchmark file: `{payload['taxi_path']}`",
         f"- All claims passed: `{payload['all_passed']}`",
         "",
         "| Claim | Status | Value | Threshold | Meaning |",
@@ -175,11 +231,13 @@ def _write_final_audit(payload: dict) -> None:
         "",
         "6. **V3 robustness result.** The expanded pass adds boundary-channel ablations, six independently sampled option-library seeds, and noisy diagnostic-estimator sensitivity. Full handoff evidence beats any single channel, cross-library repair has a positive bootstrap interval, and severe diagnostic noise exposes the expected failure boundary.",
         "",
-        "7. **Biggest weaknesses.** The environment is a controlled mechanism simulator, not a benchmark robot suite; the repair uses hand-designed boundary evidence; and the experiments validate the failure mode rather than claiming broad real-robot performance.",
+        "7. **V4 real benchmark result.** Gymnasium Taxi-v3 is now included as a standard option-chain benchmark. Proxy-tail selection prefers illegal or badly ordered pickup/dropoff handoffs, while Handoff-Calibrated Sieve recovers executed return using public boundary evidence.",
         "",
-        "8. **Paper-worthiness.** Submission-ready as a mechanism paper after the v3 pass, with a clear claim boundary. It still needs benchmark validation and learned boundary estimators before claiming robotics-scale performance.",
+        "8. **Biggest weaknesses.** Taxi-v3 is a standard benchmark but still not a robotics-scale manipulation suite; the repair uses hand-designed boundary evidence; and the experiments validate the failure mode rather than claiming broad real-robot performance.",
         "",
-        "9. **Final PDF location.** Expected repository path: `paper/final/best of n hierarchical skill options-v3.pdf`. Desktop publication is a post-verification step only.",
+        "9. **Paper-worthiness.** Submission-ready as a mechanism paper after the v4 pass, with a standard benchmark tier, a clear claim boundary, and learned-boundary estimators reserved for future work.",
+        "",
+        "10. **Final PDF location.** Expected repository path: `paper/final/best of n hierarchical skill options-v4.pdf`. Desktop publication is a post-verification step only.",
         "",
         "## Claim Status",
         "",

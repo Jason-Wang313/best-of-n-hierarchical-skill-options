@@ -12,11 +12,13 @@
 
 6. **V3 robustness result.** The expanded pass adds boundary-channel ablations, six independently sampled option-library seeds, and noisy diagnostic-estimator sensitivity. Full handoff evidence beats any single channel, cross-library repair has a positive bootstrap interval, and severe diagnostic noise exposes the expected failure boundary.
 
-7. **Biggest weaknesses.** The environment is a controlled mechanism simulator, not a benchmark robot suite; the repair uses hand-designed boundary evidence; and the experiments validate the failure mode rather than claiming broad real-robot performance.
+7. **V4 real benchmark result.** Gymnasium Taxi-v3 is now included as a standard option-chain benchmark. Proxy-tail selection prefers illegal or badly ordered pickup/dropoff handoffs, while Handoff-Calibrated Sieve recovers executed return using public boundary evidence.
 
-8. **Paper-worthiness.** Submission-ready as a mechanism paper after the v3 pass, with a clear claim boundary. It still needs benchmark validation and learned boundary estimators before claiming robotics-scale performance.
+8. **Biggest weaknesses.** Taxi-v3 is a standard benchmark but still not a robotics-scale manipulation suite; the repair uses hand-designed boundary evidence; and the experiments validate the failure mode rather than claiming broad real-robot performance.
 
-9. **Final PDF location.** Expected repository path: `paper/final/best of n hierarchical skill options-v3.pdf`. Desktop publication is a post-verification step only.
+9. **Paper-worthiness.** Submission-ready as a mechanism paper after the v4 pass, with a standard benchmark tier, a clear claim boundary, and learned-boundary estimators reserved for future work.
+
+10. **Final PDF location.** Expected repository path: `paper/final/best of n hierarchical skill options-v4.pdf`. Desktop publication is a post-verification step only.
 
 ## Claim Status
 
@@ -31,3 +33,8 @@
 - `library_seed_grid_repair_improves_mean`: pass (0.4181 vs 0.1500)
 - `moderate_noisy_diagnostics_still_help`: pass (0.7987 vs 0.0500)
 - `severe_diagnostic_noise_exposes_failure_boundary`: pass (0.3878 vs 0.1500)
+- `taxi_proxy_tail_harms_return`: pass (-14.5000 vs -5.0000)
+- `taxi_handoff_sieve_repairs_return`: pass (14.0750 vs 8.0000)
+- `taxi_handoff_sieve_reduces_public_risk`: pass (-3.0020 vs -1.0000)
+- `taxi_oracle_headroom_positive`: pass (14.5000 vs 10.0000)
+- `taxi_public_risk_control_repairs_return`: pass (14.4000 vs 8.0000)
