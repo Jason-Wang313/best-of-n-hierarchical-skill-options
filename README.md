@@ -16,7 +16,7 @@ python -m skill_handoff_audit.experiments.run_all
 python -m skill_handoff_audit.experiments.run_handoff_robustness
 python -m skill_handoff_audit.experiments.run_taxi_benchmark
 python -m skill_handoff_audit.experiments.run_claim_audit
-.\scripts\build_paper.ps1
+.\scripts\build_paper.ps1 -DesktopCopy "C:\Users\wangz\OneDrive\Desktop\best of n hierarchical skill options-v4.pdf"
 ```
 
 Main outputs:
@@ -45,7 +45,7 @@ Main outputs:
 - Repair method: **Handoff-Calibrated Sieve**, which selects using public boundary evidence without hidden true labels.
 - A finite-population rank-tail calibration check for selected true utility under proxy-tail selection.
 - V3 robustness checks: boundary-channel ablations, independently sampled option-library seeds, and noisy diagnostic-estimator sensitivity.
-- V4 standard benchmark tier: Gymnasium `Taxi-v3` option-chain execution with real pickup/dropoff rollouts, oracle headroom, risk-only control, and claim gates.
+- V4 standard benchmark tier: Gymnasium `Taxi-v3` option-chain execution with real pickup/dropoff rollouts, 24 held-out starts per seed, candidate budgets through `N=64`, oracle headroom, risk-only control, and claim gates.
 
 ## Claim Boundary
 

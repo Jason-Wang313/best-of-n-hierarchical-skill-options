@@ -22,8 +22,9 @@ The paper should only make claims whose checks pass here.
 | `library_seed_grid_repair_improves_mean` | pass | 0.4181 | 0.1500 | The repair improves mean true utility across multiple independently sampled option libraries. |
 | `moderate_noisy_diagnostics_still_help` | pass | 0.7987 | 0.0500 | Noisy public boundary estimates still improve selected utility at moderate noise. |
 | `severe_diagnostic_noise_exposes_failure_boundary` | pass | 0.3878 | 0.1500 | Clean handoff diagnostics recover more value than severely corrupted diagnostics. |
-| `taxi_proxy_tail_harms_return` | pass | -14.5000 | -5.0000 | On Gymnasium Taxi-v3, proxy-tail selection must reduce executed return relative to the first candidate. |
-| `taxi_handoff_sieve_repairs_return` | pass | 14.0750 | 8.0000 | Handoff-Calibrated Sieve must recover Taxi executed return over the proxy tail. |
-| `taxi_handoff_sieve_reduces_public_risk` | pass | -3.0020 | -1.0000 | Handoff-Calibrated Sieve must reduce selected public boundary risk on Taxi-v3. |
-| `taxi_oracle_headroom_positive` | pass | 14.5000 | 10.0000 | Taxi candidate pools must contain better in-pool chains than the proxy tail selects. |
-| `taxi_public_risk_control_repairs_return` | pass | 14.4000 | 8.0000 | A public-risk-only Taxi control must also repair return, showing the boundary signal is causal. |
+| `taxi_proxy_tail_harms_return` | pass | -12.6333 | -5.0000 | On Gymnasium Taxi-v3, proxy-tail selection must reduce executed return relative to the first candidate. |
+| `taxi_handoff_sieve_repairs_return` | pass | 11.0500 | 8.0000 | Handoff-Calibrated Sieve must recover Taxi executed return over the proxy tail. |
+| `taxi_handoff_sieve_success_noninferior` | pass | 0.0000 | -0.0100 | Handoff-Calibrated Sieve must not reduce Taxi delivery success relative to the proxy tail. |
+| `taxi_handoff_sieve_reduces_public_risk` | pass | -2.4247 | -1.0000 | Handoff-Calibrated Sieve must reduce selected public boundary risk on Taxi-v3. |
+| `taxi_oracle_headroom_positive` | pass | 12.6333 | 10.0000 | Taxi candidate pools must contain better in-pool chains than the proxy tail selects. |
+| `taxi_public_risk_control_repairs_return` | pass | 12.4000 | 8.0000 | A public-risk-only Taxi control must also repair return, showing the boundary signal is causal. |

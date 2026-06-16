@@ -6,6 +6,9 @@ from pathlib import Path
 from statistics import mean
 from typing import Any
 
+import matplotlib
+
+matplotlib.use("Agg", force=True)
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -115,10 +118,10 @@ def run_taxi_benchmark(
 ) -> dict[str, Any]:
     ensure_dirs()
     seeds = [80, 81, 82, 83, 84] if seeds is None else [int(seed) for seed in seeds]
-    contexts = 8 if preset == "smoke" else 16
+    contexts = 8 if preset == "smoke" else 24
     if contexts_per_seed is not None:
         contexts = int(contexts_per_seed)
-    max_candidates = 16 if preset == "smoke" else 32
+    max_candidates = 16 if preset == "smoke" else 64
     n_values = tuple(n for n in N_GRID if n <= max_candidates)
     output_dir.mkdir(parents=True, exist_ok=True)
 

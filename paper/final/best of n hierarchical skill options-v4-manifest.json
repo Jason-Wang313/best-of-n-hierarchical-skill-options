@@ -1,0 +1,49 @@
+{
+  "paper_name": "Handoff-Feasibility Audits for Hierarchical Skill-Chain Planners",
+  "desktop_pdf_name": "best of n hierarchical skill options-v4.pdf",
+  "version": "v4",
+  "verified_on": "2026-06-16",
+  "source_folder": "C:/Users/wangz/best of n hierarchical skill options",
+  "folder_name_source_of_truth": "best of n hierarchical skill options",
+  "github_repository": "Jason-Wang313/best-of-n-hierarchical-skill-options",
+  "github_remote": "https://github.com/Jason-Wang313/best-of-n-hierarchical-skill-options.git",
+  "repo_pdf": "paper/final/best of n hierarchical skill options-v4.pdf",
+  "desktop_pdf": "C:/Users/wangz/OneDrive/Desktop/best of n hierarchical skill options-v4.pdf",
+  "pdf_sha256": "8AADB8F83EDA15C6A35B211048BF7355D41571B3A32A3BB1FE6DDE0769A73604",
+  "pdf_pages": 11,
+  "repo_desktop_hash_match": true,
+  "checks": {
+    "compileall": "passed: python -m compileall skill_handoff_audit scripts tests -q",
+    "taxi_benchmark": "passed: python -m skill_handoff_audit.experiments.run_taxi_benchmark",
+    "claim_audit": "passed: python -m skill_handoff_audit.experiments.run_claim_audit",
+    "pytest": "passed: 14 tests",
+    "build": "passed: powershell -ExecutionPolicy Bypass -File scripts/build_paper.ps1 -DesktopCopy C:/Users/wangz/OneDrive/Desktop/best of n hierarchical skill options-v4.pdf",
+    "latex_log_scan": "passed: no unresolved citations, references, rerun warnings, overfull boxes, or natbib warnings in final pass",
+    "pdfinfo": "passed: 11 pages, letter",
+    "visual_qa": "passed: rendered all pages; inspected pages 1, 4, 5, 6, 7, 8, 9, 10, and 11"
+  },
+  "evidence_scope": [
+    "controlled option-chain simulator",
+    "candidate-budget sweeps through N=512",
+    "finite-population rank-tail calibration check",
+    "Handoff-Calibrated Sieve repair",
+    "oracle, calibrated, random, and anti-correlated scorer controls",
+    "boundary-channel ablations",
+    "six independently sampled option-library seeds",
+    "diagnostic-noise sensitivity",
+    "Gymnasium Taxi-v3 option-chain benchmark",
+    "Taxi-v3 expanded held-out protocol with seeds 80-84, 24 starts per seed, and N through 64"
+  ],
+  "claim_gates": {
+    "all_claims_passed": true,
+    "taxi_proxy_tail_harms_return": true,
+    "taxi_handoff_sieve_repairs_return": true,
+    "taxi_handoff_sieve_success_noninferior": true,
+    "taxi_handoff_sieve_reduces_public_risk": true,
+    "taxi_oracle_headroom_positive": true,
+    "taxi_public_risk_control_repairs_return": true,
+    "no_robotics_scale_claim": true,
+    "no_hidden_label_repair_claim": true,
+    "no_universal_hierarchical_planning_theorem": true
+  }
+}

@@ -126,51 +126,51 @@ def audit_claims(
         ),
     }
     claims.update(robustness_payload["claims"])
+    taxi_summary = taxi_payload["summary"]
+    proxy_harm = taxi_summary["proxy_minus_first_return_ci"]
+    repair = taxi_summary["sieve_minus_proxy_return_ci"]
+    success = taxi_summary["sieve_minus_proxy_success_ci"]
+    risk_reduction = taxi_summary["sieve_minus_proxy_risk_ci"]
+    oracle = taxi_summary["oracle_minus_proxy_return_ci"]
+    risk_only = taxi_summary["risk_only_minus_proxy_return_ci"]
     claims.update(
         {
-            name: {
-                "status": "pass" if bool(status) else "fail",
-                "value": float(taxi_payload["summary"][summary_key]["mean"]),
-                "threshold": float(threshold),
-                "description": description,
-            }
-            for name, status, summary_key, threshold, description in [
-                (
-                    "taxi_proxy_tail_harms_return",
-                    taxi_payload["claims"]["taxi_proxy_tail_harms_return"],
-                    "proxy_minus_first_return_ci",
-                    -5.0,
-                    "On Gymnasium Taxi-v3, proxy-tail selection must reduce executed return relative to the first candidate.",
-                ),
-                (
-                    "taxi_handoff_sieve_repairs_return",
-                    taxi_payload["claims"]["taxi_handoff_sieve_repairs_return"],
-                    "sieve_minus_proxy_return_ci",
-                    8.0,
-                    "Handoff-Calibrated Sieve must recover Taxi executed return over the proxy tail.",
-                ),
-                (
-                    "taxi_handoff_sieve_reduces_public_risk",
-                    taxi_payload["claims"]["taxi_handoff_sieve_reduces_public_risk"],
-                    "sieve_minus_proxy_risk_ci",
-                    -1.0,
-                    "Handoff-Calibrated Sieve must reduce selected public boundary risk on Taxi-v3.",
-                ),
-                (
-                    "taxi_oracle_headroom_positive",
-                    taxi_payload["claims"]["taxi_oracle_headroom_positive"],
-                    "oracle_minus_proxy_return_ci",
-                    10.0,
-                    "Taxi candidate pools must contain better in-pool chains than the proxy tail selects.",
-                ),
-                (
-                    "taxi_public_risk_control_repairs_return",
-                    taxi_payload["claims"]["taxi_public_risk_control_repairs_return"],
-                    "risk_only_minus_proxy_return_ci",
-                    8.0,
-                    "A public-risk-only Taxi control must also repair return, showing the boundary signal is causal.",
-                ),
-            ]
+            "taxi_proxy_tail_harms_return": _claim(
+                proxy_harm["hi"] < -5.0,
+                float(proxy_harm["mean"]),
+                -5.0,
+                "On Gymnasium Taxi-v3, proxy-tail selection must reduce executed return relative to the first candidate.",
+            ),
+            "taxi_handoff_sieve_repairs_return": _claim(
+                repair["lo"] > 8.0,
+                float(repair["mean"]),
+                8.0,
+                "Handoff-Calibrated Sieve must recover Taxi executed return over the proxy tail.",
+            ),
+            "taxi_handoff_sieve_success_noninferior": _claim(
+                success["mean"] >= -0.01,
+                float(success["mean"]),
+                -0.01,
+                "Handoff-Calibrated Sieve must not reduce Taxi delivery success relative to the proxy tail.",
+            ),
+            "taxi_handoff_sieve_reduces_public_risk": _claim(
+                risk_reduction["hi"] < -1.0,
+                float(risk_reduction["mean"]),
+                -1.0,
+                "Handoff-Calibrated Sieve must reduce selected public boundary risk on Taxi-v3.",
+            ),
+            "taxi_oracle_headroom_positive": _claim(
+                oracle["lo"] > 10.0,
+                float(oracle["mean"]),
+                10.0,
+                "Taxi candidate pools must contain better in-pool chains than the proxy tail selects.",
+            ),
+            "taxi_public_risk_control_repairs_return": _claim(
+                risk_only["lo"] > 8.0,
+                float(risk_only["mean"]),
+                8.0,
+                "A public-risk-only Taxi control must also repair return, showing the boundary signal is causal.",
+            ),
         }
     )
     payload = {
@@ -231,13 +231,13 @@ def _write_final_audit(payload: dict) -> None:
         "",
         "6. **V3 robustness result.** The expanded pass adds boundary-channel ablations, six independently sampled option-library seeds, and noisy diagnostic-estimator sensitivity. Full handoff evidence beats any single channel, cross-library repair has a positive bootstrap interval, and severe diagnostic noise exposes the expected failure boundary.",
         "",
-        "7. **V4 real benchmark result.** Gymnasium Taxi-v3 is now included as a standard option-chain benchmark. Proxy-tail selection prefers illegal or badly ordered pickup/dropoff handoffs, while Handoff-Calibrated Sieve recovers executed return using public boundary evidence.",
+        "7. **V4 real benchmark result.** Gymnasium Taxi-v3 is included as a standard option-chain benchmark. Under the expanded held-out protocol, proxy-tail selection prefers illegal or badly ordered pickup/dropoff handoffs, while Handoff-Calibrated Sieve recovers executed return and keeps delivery success noninferior using public boundary evidence.",
         "",
         "8. **Biggest weaknesses.** Taxi-v3 is a standard benchmark but still not a robotics-scale manipulation suite; the repair uses hand-designed boundary evidence; and the experiments validate the failure mode rather than claiming broad real-robot performance.",
         "",
         "9. **Paper-worthiness.** Submission-ready as a mechanism paper after the v4 pass, with a standard benchmark tier, a clear claim boundary, and learned-boundary estimators reserved for future work.",
         "",
-        "10. **Final PDF location.** Expected repository path: `paper/final/best of n hierarchical skill options-v4.pdf`. Desktop publication is a post-verification step only.",
+        "10. **Final PDF location.** Expected repository path: `paper/final/best of n hierarchical skill options-v4.pdf`. The visible Desktop copy is produced with `scripts\\build_paper.ps1 -DesktopCopy` after verification.",
         "",
         "## Claim Status",
         "",

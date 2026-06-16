@@ -26,7 +26,7 @@
 \maketitle
 
 \begin{abstract}
-Hierarchical robot planners compose learned skills, options, and subgoals across long horizons. Their failures often occur at the interfaces between skills: an option may terminate outside the next option's initiation support, accumulate abstract-state drift, or produce a high-scoring subgoal sequence that is no longer executable. We study this failure as a handoff-feasibility audit for planners that sample many high-level skill chains and execute the highest proxy-scoring chain. The contribution is not another generic proxy-overoptimization curve. It is an option-specific audit that measures initiation violation, termination drift, reachability gap, boundary surprise, and estimated chain executability before execution. In a controlled option-chain simulator, increasing the candidate budget raises selected proxy score by \(7.52\), while selected executability at \(N=512\) falls to \(15.2\%\) of its \(N=1\) value. A Handoff-Calibrated Sieve, using only public boundary evidence, improves large-budget true utility by \(0.53\). Robustness checks add boundary-channel ablations, six independently sampled option-library seeds, noisy diagnostic-estimator sensitivity, and a standard Gymnasium Taxi-v3 option-chain benchmark. On Taxi-v3, proxy-tail selection lowers executed return by \(14.50\) relative to the first candidate; the handoff sieve recovers \(14.08\) return and reduces selected public boundary risk by \(3.00\). The paper is a mechanism study and diagnostic target for real skill-chain planners, not a benchmark robotics claim.
+Hierarchical robot planners compose learned skills, options, and subgoals across long horizons. Their failures often occur at the interfaces between skills: an option may terminate outside the next option's initiation support, accumulate abstract-state drift, or produce a high-scoring subgoal sequence that is no longer executable. We study this failure as a handoff-feasibility audit for planners that sample many high-level skill chains and execute the highest proxy-scoring chain. The contribution is not another generic proxy-overoptimization curve. It is an option-specific audit that measures initiation violation, termination drift, reachability gap, boundary surprise, and estimated chain executability before execution. In a controlled option-chain simulator, increasing the candidate budget raises selected proxy score by \(7.52\), while selected executability at \(N=512\) falls to \(15.2\%\) of its \(N=1\) value. A Handoff-Calibrated Sieve, using only public boundary evidence, improves large-budget true utility by \(0.53\). Robustness checks add boundary-channel ablations, six independently sampled option-library seeds, noisy diagnostic-estimator sensitivity, and a standard Gymnasium Taxi-v3 option-chain benchmark. On Taxi-v3, proxy-tail selection lowers executed return by \(12.63\) relative to the first candidate; the handoff sieve recovers \(11.05\) return and reduces selected public boundary risk by \(2.42\). The paper is a mechanism study and diagnostic target for real skill-chain planners, not a benchmark robotics claim.
 \end{abstract}
 
 \section{Introduction}
@@ -169,7 +169,7 @@ Real systems will estimate initiation and termination evidence from data. We the
 
 \subsection{Gymnasium Taxi-v3 Option Benchmark}
 
-The controlled simulator is not enough for a submission-ready empirical claim, so v4 adds a standard Gymnasium Taxi-v3 benchmark \citep{towers2024gymnasium}. Each Taxi state is converted into a high-level option-chain problem over navigation-to-landmark, pickup, and dropoff macros. Candidate chains are executed with the real Taxi transition dynamics. The proxy overvalues chains containing ambitious destination and task-completion tokens while weakly penalizing illegal pickup/dropoff boundaries. Public handoff diagnostics measure pickup violation, dropoff violation, route excess, boundary surprise, and an estimated handoff success score. The final protocol uses held-out seeds 80--84, 16 Taxi starts per seed, and \(N \in \{1,2,4,8,16,32\}\).
+The controlled simulator is not enough for a submission-ready empirical claim, so v4 adds a standard Gymnasium Taxi-v3 benchmark \citep{towers2024gymnasium}. Each Taxi state is converted into a high-level option-chain problem over navigation-to-landmark, pickup, and dropoff macros. Candidate chains are executed with the real Taxi transition dynamics. The proxy overvalues chains containing ambitious destination and task-completion tokens while weakly penalizing illegal pickup/dropoff boundaries. Public handoff diagnostics measure pickup violation, dropoff violation, route excess, boundary surprise, and an estimated handoff success score. The final protocol uses held-out seeds 80--84, 24 Taxi starts per seed, and \(N \in \{1,2,4,8,16,32,64\}\).
 
 \begin{figure}[t]
 \centering
@@ -180,22 +180,22 @@ The controlled simulator is not enough for a submission-ready empirical claim, s
 
 \begin{table}[t]
 \centering
-\caption{Held-out Taxi-v3 effects at \(N=32\), mean with bootstrap \(95\%\) interval. Positive return deltas are better; negative risk deltas are better.}
+\caption{Held-out Taxi-v3 effects at \(N=64\), mean with bootstrap \(95\%\) interval. Positive return deltas are better; negative risk deltas are better.}
 \label{tab:taxi}
 \begin{tabular}{lr}
 \toprule
 Effect & Mean \([95\%\ \mathrm{CI}]\) \\
 \midrule
-Proxy tail minus first candidate return & \(-14.50\ [-15.35,-13.55]\) \\
-Handoff sieve minus proxy-tail return & \(14.08\ [12.98,15.08]\) \\
-Risk-only control minus proxy-tail return & \(14.40\ [13.35,15.35]\) \\
-Oracle tail minus proxy-tail return & \(14.50\ [13.55,15.35]\) \\
-Handoff sieve minus proxy-tail public risk & \(-3.00\ [-3.23,-2.80]\) \\
+Proxy tail minus first candidate return & \(-12.63\ [-13.37,-11.72]\) \\
+Handoff sieve minus proxy-tail return & \(11.05\ [9.85,11.97]\) \\
+Risk-only control minus proxy-tail return & \(12.40\ [11.47,13.10]\) \\
+Oracle tail minus proxy-tail return & \(12.63\ [11.72,13.37]\) \\
+Handoff sieve minus proxy-tail public risk & \(-2.42\ [-2.65,-2.16]\) \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Taxi-v3 supports the same mechanism under real benchmark transitions. The proxy tail chooses chains such as navigating to the destination, attempting dropoff before pickup, then recovering later; these chains can still eventually complete the task but pay large illegal-handoff penalties. The handoff sieve rejects those boundary violations and recovers almost all oracle headroom. The risk-only control also repairs the benchmark, which is not a weakness for this paper: it shows that the public boundary signal is causal and strong in Taxi-v3. The paper therefore claims Taxi as a standard option-chain stress test, not as evidence of robotics-scale manipulation performance.
+Taxi-v3 supports the same mechanism under real benchmark transitions. The proxy tail chooses chains such as navigating to the destination, attempting dropoff before pickup, then recovering later; these chains can still eventually complete the task but pay large illegal-handoff penalties. The handoff sieve rejects those boundary violations and recovers most oracle headroom without reducing delivery success. The risk-only control also repairs the benchmark, which is not a weakness for this paper: it shows that the public boundary signal is causal and strong in Taxi-v3. The paper therefore claims Taxi as a standard option-chain stress test, not as evidence of robotics-scale manipulation performance.
 
 \subsection{Rank-Tail Diagnostic}
 
@@ -271,10 +271,10 @@ Full evidence boundary-risk ratio & \(0.582\) & \(<0.750\) \\
 Cross-library utility gain & \(0.42\) & \(>0.15\) \\
 Moderate-noise utility gain & \(0.80\) & \(>0.05\) \\
 Clean minus severe-noise recovery & \(0.39\) & \(>0.15\) \\
-Taxi proxy-tail return harm & \(-14.50\) & \(<-5.00\) \\
-Taxi handoff-sieve return recovery & \(14.08\) & \(>8.00\) \\
-Taxi selected boundary-risk reduction & \(-3.00\) & \(<-1.00\) \\
-Taxi oracle headroom & \(14.50\) & \(>10.00\) \\
+Taxi proxy-tail return harm & \(-12.63\) & \(<-5.00\) \\
+Taxi handoff-sieve return recovery & \(11.05\) & \(>8.00\) \\
+Taxi selected boundary-risk reduction & \(-2.42\) & \(<-1.00\) \\
+Taxi oracle headroom & \(12.63\) & \(>10.00\) \\
 \bottomrule
 \end{tabular}
 \end{center}

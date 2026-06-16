@@ -1,3 +1,7 @@
+param(
+  [string]$DesktopCopy = ""
+)
+
 $ErrorActionPreference = "Stop"
 
 $Root = Split-Path -Parent $PSScriptRoot
@@ -62,6 +66,14 @@ if (-not $compiled) {
 
 if (Test-Path $RepoPdf) {
   $messages.Add("Repository PDF: $RepoPdf")
+  if ($DesktopCopy) {
+    $DesktopDir = Split-Path -Parent $DesktopCopy
+    if ($DesktopDir) {
+      New-Item -ItemType Directory -Force -Path $DesktopDir | Out-Null
+    }
+    Copy-Item -Force $RepoPdf $DesktopCopy
+    $messages.Add("Desktop PDF: $DesktopCopy")
+  }
 }
 else {
   $messages.Add("Error: no PDF artifact was produced.")
@@ -70,3 +82,6 @@ else {
 $messages | Set-Content -Encoding UTF8 $Log
 Write-Host "Wrote $Log"
 Write-Host "Wrote $RepoPdf"
+if ($DesktopCopy) {
+  Write-Host "Wrote $DesktopCopy"
+}
