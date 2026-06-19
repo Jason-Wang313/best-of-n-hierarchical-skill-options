@@ -7,7 +7,7 @@
 - GitHub remote: `https://github.com/Jason-Wang313/best-of-n-hierarchical-skill-options.git`
 - Repository PDF: `paper/final/best of n hierarchical skill options-v4.pdf`
 - Visible Desktop PDF: `C:\Users\wangz\OneDrive\Desktop\best of n hierarchical skill options-v4.pdf`
-- SHA256: `8AADB8F83EDA15C6A35B211048BF7355D41571B3A32A3BB1FE6DDE0769A73604`
+- SHA256: `BABC8DC1CDC5645B220179EF15A585C634ADD73C39BBAFC279A4A7A5029599FD`
 - Page count: 11
 - Repo/Desktop hash match: yes
 - Verified on: 2026-06-19

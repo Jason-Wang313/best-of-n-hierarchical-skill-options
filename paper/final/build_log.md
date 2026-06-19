@@ -1,6 +1,6 @@
 ﻿# Paper Build Log
 
-Build time: 2026-06-16T08:54:23.1796780+01:00
+Build time: 2026-06-19T18:53:48.3526349+08:00
 Using pdflatex: C:\Users\wangz\.local\bin\pdflatex.cmd
 Using bibtex: C:\Users\wangz\AppData\Local\Programs\MiKTeX\miktex\bin\x64\bibtex.exe
 Status: compiled LaTeX successfully.
